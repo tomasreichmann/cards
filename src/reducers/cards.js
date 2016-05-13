@@ -28,10 +28,21 @@ export default function cards(state = {
 }, action) {
   switch (action.type) {
     case CARDS_SHUFFLE:
-      state = 1;
+      let unshuffled = state[action.payload].slice();
+      let shuffled = [];
+      let failsafe = 100;
+      while(unshuffled.length > 0 && failsafe--){
+        let randomIndex = Math.floor( Math.random()*unshuffled.length );
+        let randomItem = shuffled.push( unshuffled[randomIndex] );
+        unshuffled = [
+          ...unshuffled.slice(0,randomIndex),
+          ...unshuffled.slice(randomIndex+1,unshuffled.length)
+        ];
+      }
+
       return {
         ...state,
-        //[action.payload]: null,
+        [action.payload]: shuffled,
       };
     case CARDS_MOVE_CARD:
       return {
@@ -46,7 +57,6 @@ export default function cards(state = {
         ],
       };
     case CARDS_SHOW_FACE:
-      console.log(CARDS_SHOW_FACE, action.payload, state);
       let index = action.payload.key;
       return {
         ...state,

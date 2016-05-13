@@ -16,10 +16,7 @@ function Card(props) {
   var image = props.graphics && <img src={ props.graphics } />;
   var extras = {};
   const cardClick = () => ( console.log("cardClick") );
-  console.log("name", props.name, "faceUp", props.faceUp);
   return (
-
-    
     <div className={ cx(s.card, props.className, s["card--" + ( props.faceUp ? "faceUp" : "faceDown")], s["card--"+props.type]) } onClick={ props.clickAction } {...extras} >
       <div className={s["card-frontFace"]} >
         <div className={s["card-frontFace-header"]} >

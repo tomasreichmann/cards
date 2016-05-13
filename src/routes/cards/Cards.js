@@ -19,7 +19,6 @@ import configureStore from '../../store/configureStore';
 const title = 'Cards';
 
 function Cards(props, context) {
-  console.log("Cards render");
   context.setTitle(title);
 
   const clickAction = (index, key) => (
