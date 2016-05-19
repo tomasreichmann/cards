@@ -7,18 +7,53 @@
  * LICENSE.txt file in the root directory of this source tree.
  */
 
+@import '../variables.scss';
+
 .clearfix{
-  zoom:1;
-  &:before, &:after{ content:""; display:table; }
-  &:after{ clear: both; }
+	zoom:1;
+	&:before, &:after{ content:""; display:table; }
+	&:after{ clear: both; }
 }
 
 .root {
-  margin: 0 -10px;
-  @extend .clearfix;
+	margin: 0 -10px;
+	@extend .clearfix;
+}
 
-}
 .card {
-  float: left;
-  margin: 0 10px 10px 0;
+	float: left;
+	margin: 0 10px 20px 0;
 }
+
+$card-shift: -202px;
+
+.stack {
+	position: relative;
+	float: left;
+	margin: 0 10px 20px 0;
+	height: $card-height;
+
+	.card {
+		position: relative;
+		margin: 0;
+		float: none;
+	}
+	.card + .card {
+		margin-top: $card-shift;
+	}
+	.card:last-child {
+		margin-bottom: 202px;
+	}
+}
+
+
+.type-hand {
+	.card {
+		margin-right: -100px;
+		transition: margin-right 0.3s ease;
+		&:hover {
+			margin-right: 0;
+		}
+	}
+}
+

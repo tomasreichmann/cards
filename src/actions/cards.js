@@ -1,4 +1,4 @@
-import { CARDS_SHUFFLE, CARDS_MOVE_CARD, CARDS_SHOW_FACE } from '../constants';
+import { CARDS_SHUFFLE, CARDS_MOVE_CARD, CARDS_SHOW_FACE, CARDS_CLICK } from '../constants';
 
 export function shuffle(key) {
   return {
@@ -22,14 +22,25 @@ export function showFace(faceUp, key) {
   return {
     type: CARDS_SHOW_FACE,
     payload: {
-    	faceUp,
-    	key
+      faceUp,
+      key
+    },
+  };
+}
+
+export function cardClick(key, index) {
+  return {
+    type: CARDS_CLICK,
+    payload: {
+    	key,
+    	index
     },
   };
 }
 
 export default {
 	shuffle,
-	moveCard,
+  moveCard,
+	cardClick,
 	showFace
 }

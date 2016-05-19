@@ -13,17 +13,17 @@ import s from './Cards.scss';
 import CardDeck from '../../components/CardDeck';
 import Card from '../../components/Card';
 import { connect } from 'react-redux';
-import actions, { shuffle, moveCard, showFace } from '../../actions/cards';
-import configureStore from '../../store/configureStore';
+import actions, { shuffle, moveCard, showFace, cardClick } from '../../actions/cards';
 
 const title = 'Cards';
 
 function Cards(props, context) {
   context.setTitle(title);
 
-  const clickAction = (index, key) => (
-    props.moveCard(key, index, key == "hand" ? "drawDeck" : "hand" )
-  )
+  const clickAction = (index, key) => {
+    console.log("clickAction", key, index, props.cardClick);
+    props.cardClick(key, index);
+  }
 
   const changeShowFace = (faceUp, key) => (
     props.showFace(faceUp, key)
@@ -34,28 +34,22 @@ function Cards(props, context) {
   )
 
   const mapStoreToCards = (item, index, key) => (
-    <Card
-      name={item.name}
-      type={item.type}
-      faceUp={item.faceUp}
-      description={item.description}
-      clickAction={ () => ( clickAction(index, key) ) }
-      footer={item.footter}
-    />
+    item.constructor === Array ? item.map( (item, stackIndex) => ( <Card {...item} clickAction={() => ( clickAction(index+"-"+stackIndex, key) )} /> ) ) : <Card {...item} clickAction={() => ( clickAction(index, key) )}  />
   );
 
-  const cardsInDeck = props.cards.drawDeck.map( (item, index) => (mapStoreToCards(item, index, "drawDeck") ) );
+  const cardsInSupply = props.cards.supply.map( (item, index) => (mapStoreToCards(item, index, "supply") ) );
+  const cardsInBoard = props.cards.board.map( (item, index) => (mapStoreToCards(item, index, "board") ) );
   const cardsInHand = props.cards.hand.map( (item, index) => (mapStoreToCards(item, index, "hand") ) );
 
   return (
     <div className={s.root}>
       <div className={s.container}>
         <h1>{title}</h1>
-        <CardDeck title="Draw deck" cards={cardsInDeck} key="drawDeck" ></CardDeck>
-        <button onClick={ () => ( changeShowFace(true, "drawDeck") ) } >Face Up</button>
-        {" "}| <button onClick={ () => ( changeShowFace(false, "drawDeck") ) } >Face Down</button>
-        {" "}| <button onClick={ () => ( doShuffle("drawDeck") ) } >Shuffle</button>
-        <CardDeck title="Hand" cards={cardsInHand} key="hand" ></CardDeck>
+        <CardDeck title="Supply" cards={cardsInSupply} key="supply" type="supply" ></CardDeck>
+
+        <CardDeck title="Board" cards={cardsInBoard} key="board" type="board" ></CardDeck>
+
+        <CardDeck title="Hand" cards={cardsInHand} key="hand" type="hand" ></CardDeck>
         <button onClick={ () => ( changeShowFace(true, "hand") ) } >Face Up</button>
         {" "}| <button onClick={ () => ( changeShowFace(false, "hand") ) } >Face Down</button>
         {" "}| <button onClick={ () => ( doShuffle("hand") ) } >Shuffle</button>
@@ -69,5 +63,5 @@ Cards.contextTypes = { setTitle: PropTypes.func.isRequired };
 export default connect(state => ({
   cards: state.cards
 }), {
-  shuffle, moveCard, showFace
+  shuffle, moveCard, showFace, cardClick
 })( withStyles(s)(Cards) );

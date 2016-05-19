@@ -13,10 +13,13 @@ import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from './CardDeck.scss';
 
 function CardDeck(props) {
+  const cardTemplate = (item, index) => (
+  	<div className={ cx(s.card, { [s["card--noHover"]]: item.noHover }) } key={index} >{item}</div>
+  )
   return (
-    <div className={s.root} >
+    <div className={ cx(s.root, props.className, props.type && s["type-" + props.type ]) } >
       { props.title && <h2>{props.title}</h2> }
-      {props.cards.map( (item, index) => ( <div className={s.card} key={index} >{item}</div> ) )}
+      {props.cards.map( (item, index) => ( item.constructor === Array ? <div className={s.stack} key={index} >{ item.map( (item, index) => ( cardTemplate(item, index) ) ) }</div> : cardTemplate(item, index) ) )}
     </div>
   );
 }
