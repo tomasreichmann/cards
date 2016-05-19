@@ -152,6 +152,7 @@ const cardTypes = {
     "stables": {
       name: "Stables",
       type: "building",
+      graphics: "http://www.3d-puzzlewelt.com/images_shop/product/mittelalter-pferdestall_umbum_4627081552141_1388_1.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
@@ -159,6 +160,7 @@ const cardTypes = {
     "mine": {
       name: "Mine",
       type: "building",
+      graphics: "https://enchantedamerica.files.wordpress.com/2014/09/florida-disneyland-seven-dwarfs-mine-train-rails.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
@@ -166,6 +168,7 @@ const cardTypes = {
     "chapel": {
       name: "Chapel",
       type: "building",
+      graphics: "https://s-media-cache-ak0.pinimg.com/736x/06/17/3b/06173b7f2a158d87011c16a7b5cd8130.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
@@ -173,13 +176,15 @@ const cardTypes = {
     "sawmill": {
       name: "Sawmill",
       type: "building",
+      graphics: "http://img13.deviantart.net/7364/i/2012/056/2/5/old_sawmill_by_erebus74-d4qx60h.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
     },
-    "quary": {
-      name: "Quary",
+    "quarry": {
+      name: "Quarry",
       type: "building",
+      graphics: "https://s-media-cache-ak0.pinimg.com/736x/eb/66/d1/eb66d13d533b94a7bc02bbbd6f18e494.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
@@ -187,6 +192,7 @@ const cardTypes = {
     "marketplace": {
       name: "Marketplace",
       type: "building",
+      graphics: "http://orig07.deviantart.net/a882/f/2012/235/b/4/medieval_market_by_minnhagen-d5c4fb5.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
