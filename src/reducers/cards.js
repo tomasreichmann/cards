@@ -8,7 +8,7 @@ const shuffle = (arr) => {
     let randomItem = shuffled.push( unshuffled[randomIndex] );
     unshuffled = [
       ...unshuffled.slice(0,randomIndex),
-      ...unshuffled.slice(randomIndex+1,unshuffled.length)
+      ...unshuffled.slice(randomIndex+1)
     ];
   }
   return shuffled;
@@ -20,44 +20,68 @@ const updateLast = (arr, updateWith) => {
   ) );
 }
 
+const cardClickHandlers = {
+  hand: (state, key, index) => {
+    console.log("cardClickHandlers hand", key, index);
+    
+    return {
+      ...state,
+      hand: [
+        ...state.hand.slice(0,index),
+        Object.assign( {}, state.hand[index], { selected: !state.hand[index].selected } ),
+        ...state.hand.slice(index+1),
+      ],
+    }
+  }
+}
+
 const cardTypes = {
   resources: {
     wood: {
       name: "Wood",
+      graphics: "http://preview.turbosquid.com/Preview/2014/05/20__17_27_37/wooden_beams_c_0000.jpgb887479b-935a-4f6e-b722-970544f474a0Original.jpg",
       type: "resource"
     },
     stone: {
       name: "Stone",
+      graphics: "https://cdn1.artstation.com/p/assets/images/images/001/848/817/large/gavin-bartlett-gavinbartlett-rock-03-2016-render-01.jpg?1453684542",
       type: "resource"
     },
     iron: {
       name: "Iron",
+      graphics: "http://media-dominaria.cursecdn.com/attachments/143/922/635769989532453054.jpg",
       type: "resource"
     },
     serf: {
       name: "Serf",
+      graphics: "http://tes.riotpixels.com/skyrim/artwork/concept-a/large/NCostumeMF01.jpg",
       type: "resource"
     },
     gold: {
       name: "Gold",
+      graphics: "http://www.blirk.net/wallpapers/1600x1200/gold-wallpaper-4.jpg",
       type: "resource"
     }
   },
   lands: {
     forest: {
       name: "Forest",
+      graphics: "https://s-media-cache-ak0.pinimg.com/736x/79/ff/22/79ff227b71cb7392013b50bb5eb77fa7.jpg",
       type: "land"
     },
     plains: {
       name: "Plains",
+      graphics: "https://s-media-cache-ak0.pinimg.com/736x/08/b3/3a/08b33ae668059df7fcfe14aa5dd1c57a.jpg",
       type: "land"
     },
     hills: {
       name: "Hills",
+      graphics: "http://orig02.deviantart.net/0c14/f/2010/309/8/9/rocky_terrain_stock_3_by_mirandarose_stock-d328drk.jpg",
       type: "land"
     },
     mountains: {
       name: "Mountains",
+      graphics: "http://www.movingmountainsministries.com/wp-content/uploads/2014/03/green-abstract-mountains-artwork-337347-21.jpg",
       type: "land"
     }
   },
@@ -65,6 +89,7 @@ const cardTypes = {
     "tower": {
       name: "Tower",
       type: "building",
+      graphics: "http://preview.turbosquid.com/Preview/2014/05/24__15_49_12/windowtower.jpge4dd1d20-d37b-495d-b178-d7b7ed020190HD.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
@@ -72,20 +97,22 @@ const cardTypes = {
     "wall": {
       name: "Wall",
       type: "building",
+      graphics: "http://preview.turbosquid.com/Preview/2015/03/30__21_06_04/S1.jpgdab93f66-4f4c-47a6-9c64-bb2c83c4da0cOriginal.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
     },
-    "gate": {
-      name: "Gate",
-      type: "building",
-      cost: { wood: 0, iron: 0, stone: 0 },
-      tokenSlots: [],
-      labels: []
-    },
+    // "gate": {
+    //   name: "Gate",
+    //   type: "building",
+    //   cost: { wood: 0, iron: 0, stone: 0 },
+    //   tokenSlots: [],
+    //   labels: []
+    // },
     "living quarters": {
       name: "Living Quarters",
       type: "building",
+      graphics: "https://s-media-cache-ak0.pinimg.com/736x/45/32/41/453241e1d38ffdfcbcb439946775a40e.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
@@ -93,6 +120,7 @@ const cardTypes = {
     "armory": {
       name: "Armory",
       type: "building",
+      graphics: "http://orig13.deviantart.net/c8db/f/2015/002/c/a/armory_by_hfesbra-d8ca2pf.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
@@ -100,6 +128,7 @@ const cardTypes = {
     "barracks": {
       name: "Barracks",
       type: "building",
+      graphics: "http://www.florian-bruecher.de/portfolio/grafiken/props_wehrhaus02.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
@@ -107,6 +136,7 @@ const cardTypes = {
     "hall": {
       name: "Hall",
       type: "building",
+      graphics: "http://squarefaction.ru/files/game/744/gallery/fa1a798345789195acf615d5d9dc5329.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
@@ -114,6 +144,7 @@ const cardTypes = {
     "blacksmith": {
       name: "Blacksmith",
       type: "building",
+      graphics: "https://img-new.cgtrader.com/items/220210/large_medieval_village_blacksmith_3d_model_3ds_fbx_obj_blend_X__ms3d_b3d_3f114f8d-673b-4735-b9da-e0217b42198c.jpg",
       cost: { wood: 0, iron: 0, stone: 0 },
       tokenSlots: [],
       labels: []
@@ -198,7 +229,7 @@ const cardDecks = {
   ],
   "board": Object.keys(cardTypes.lands).map( (key) => ( { card: cardTypes.lands[key], amount: 3 } ) ),
   "resources": Object.keys(cardTypes.resources).map( (key) => ( { card: cardTypes.resources[key], amount: 20 } ) ),
-  "hand": Object.keys(cardTypes.resources).map( (key) => ( { card: cardTypes.resources[key], amount: 1, extendBy: { hover: true } } ) ),
+  "hand": Object.keys(cardTypes.resources).map( (key) => ( { card: cardTypes.resources[key], amount: 2, extendBy: { hover: true } } ) ),
 };
 
 const deckFactory = () => (
@@ -234,16 +265,18 @@ decks.supply = decks.supply.map( (item, index) => (
 // console.log("decks", decks.supply);
 
 export default function cards(state = decks, action) {
-  console.log("cards reducer", action);
   switch (action.type) {
     case CARDS_CLICK:
+    let key = action.payload.key;
       console.log(CARDS_CLICK, action.payload);
-      return state;
+      return key in cardClickHandlers ? cardClickHandlers[key](state, key, action.payload.index) : state;
+
     case CARDS_SHUFFLE:
       return {
         ...state,
         [action.payload]: shuffle( state[action.payload] ),
       };
+
     case CARDS_MOVE_CARD:
       return {
         ...state,
@@ -256,6 +289,7 @@ export default function cards(state = decks, action) {
           state[action.payload.from][action.payload.index]
         ],
       };
+
     case CARDS_SHOW_FACE:
       let index = action.payload.key;
       return {
@@ -265,6 +299,7 @@ export default function cards(state = decks, action) {
           faceUp: action.payload.faceUp
         } ) ),
       };
+
     default:
       return state;
   }

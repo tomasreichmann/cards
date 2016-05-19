@@ -15,7 +15,7 @@ import s from './Card.scss';
 function Card(props) {
   const cardClick = () => ( console.log("cardClick") );
   return (
-    <div className={ cx(s.card, props.className, s["card--" + ( props.faceUp ? "faceUp" : "faceDown")], s["card--"+props.type], { [s["card--hover"]]: props.hover }) } onClick={ props.clickAction } >
+    <div className={ cx(s.card, props.className, s["card--" + ( props.faceUp ? "faceUp" : "faceDown")], s["card--"+props.type], { [s["card--hover"]]: props.hover }, { [s["card--selected"]]: props.selected } ) } onClick={ props.clickAction } >
       <div className={s["card-frontFace"]} >
         { props.labels.length && 
           <div className={s["card-frontFace-labels"]} >
