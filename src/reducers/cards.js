@@ -125,7 +125,7 @@ const cardTypes = {
       name: "Tower",
       type: "building",
       graphics: "http://preview.turbosquid.com/Preview/2014/05/24__15_49_12/windowtower.jpge4dd1d20-d37b-495d-b178-d7b7ed020190HD.jpg",
-      cost: { WOOD: 1, IRON: 0, STONE: 3, GOLD: 0 },
+      cost: { wood: 1, iron: 0, stone: 3, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -133,22 +133,15 @@ const cardTypes = {
       name: "Wall",
       type: "building",
       graphics: "http://preview.turbosquid.com/Preview/2015/03/30__21_06_04/S1.jpgdab93f66-4f4c-47a6-9c64-bb2c83c4da0cOriginal.jpg",
-      cost: { WOOD: 0, IRON: 0, STONE: 2, GOLD: 0 },
+      cost: { wood: 0, iron: 0, stone: 2, gold: 0 },
       tokenSlots: [],
       labels: []
     },
-    // "gate": {
-    //   name: "Gate",
-    //   type: "building",
-    //   cost: { WOOD: 0, IRON: 0, STONE: 0, GOLD: 0 },
-    //   tokenSlots: [],
-    //   labels: []
-    // },
     "living quarters": {
       name: "Living Quarters",
       type: "building",
       graphics: "https://s-media-cache-ak0.pinimg.com/736x/45/32/41/453241e1d38ffdfcbcb439946775a40e.jpg",
-      cost: { WOOD: 1, IRON: 0, STONE: 1, GOLD: 0 },
+      cost: { wood: 1, iron: 0, stone: 1, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -156,7 +149,7 @@ const cardTypes = {
       name: "Armory",
       type: "building",
       graphics: "http://orig13.deviantart.net/c8db/f/2015/002/c/a/armory_by_hfesbra-d8ca2pf.jpg",
-      cost: { WOOD: 0, IRON: 2, STONE: 1, GOLD: 0 },
+      cost: { wood: 0, iron: 2, stone: 1, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -164,7 +157,7 @@ const cardTypes = {
       name: "Barracks",
       type: "building",
       graphics: "http://www.florian-bruecher.de/portfolio/grafiken/props_wehrhaus02.jpg",
-      cost: { WOOD: 1, IRON: 1, STONE: 0, GOLD: 0 },
+      cost: { wood: 1, iron: 1, stone: 0, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -172,7 +165,7 @@ const cardTypes = {
       name: "Hall",
       type: "building",
       graphics: "http://squarefaction.ru/files/game/744/gallery/fa1a798345789195acf615d5d9dc5329.jpg",
-      cost: { WOOD: 0, IRON: 0, STONE: 2, GOLD: 0 },
+      cost: { wood: 0, iron: 0, stone: 2, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -180,7 +173,7 @@ const cardTypes = {
       name: "Blacksmith",
       type: "building",
       graphics: "https://img-new.cgtrader.com/items/220210/large_medieval_village_blacksmith_3d_model_3ds_fbx_obj_blend_X__ms3d_b3d_3f114f8d-673b-4735-b9da-e0217b42198c.jpg",
-      cost: { WOOD: 1, IRON: 1, STONE: 1, GOLD: 0 },
+      cost: { wood: 1, iron: 1, stone: 1, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -188,7 +181,7 @@ const cardTypes = {
       name: "Stables",
       type: "building",
       graphics: "http://www.3d-puzzlewelt.com/images_shop/product/mittelalter-pferdestall_umbum_4627081552141_1388_1.jpg",
-      cost: { WOOD: 3, IRON: 0, STONE: 0, GOLD: 0 },
+      cost: { wood: 3, iron: 0, stone: 0, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -196,7 +189,7 @@ const cardTypes = {
       name: "Mine",
       type: "building",
       graphics: "https://enchantedamerica.files.wordpress.com/2014/09/florida-disneyland-seven-dwarfs-mine-train-rails.jpg",
-      cost: { WOOD: 2, IRON: 0, STONE: 0, GOLD: 0 },
+      cost: { wood: 2, iron: 0, stone: 0, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -204,7 +197,7 @@ const cardTypes = {
       name: "Chapel",
       type: "building",
       graphics: "https://s-media-cache-ak0.pinimg.com/736x/06/17/3b/06173b7f2a158d87011c16a7b5cd8130.jpg",
-      cost: { WOOD: 0, IRON: 0, STONE: 2, GOLD: 0 },
+      cost: { wood: 0, iron: 0, stone: 2, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -212,7 +205,7 @@ const cardTypes = {
       name: "Sawmill",
       type: "building",
       graphics: "http://img13.deviantart.net/7364/i/2012/056/2/5/old_sawmill_by_erebus74-d4qx60h.jpg",
-      cost: { WOOD: 2, IRON: 0, STONE: 0, GOLD: 0 },
+      cost: { wood: 2, iron: 0, stone: 0, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -220,7 +213,7 @@ const cardTypes = {
       name: "Quarry",
       type: "building",
       graphics: "https://s-media-cache-ak0.pinimg.com/736x/eb/66/d1/eb66d13d533b94a7bc02bbbd6f18e494.jpg",
-      cost: { WOOD: 2, IRON: 0, STONE: 0, GOLD: 0 },
+      cost: { wood: 2, iron: 0, stone: 0, gold: 0 },
       tokenSlots: [],
       labels: []
     },
@@ -228,7 +221,7 @@ const cardTypes = {
       name: "Marketplace",
       type: "building",
       graphics: "http://orig07.deviantart.net/a882/f/2012/235/b/4/medieval_market_by_minnhagen-d5c4fb5.jpg",
-      cost: { WOOD: 0, IRON: 0, STONE: 0, GOLD: 0 },
+      cost: { wood: 1, iron: 1, stone: 1, gold: 1 },
       tokenSlots: [],
       labels: []
 
@@ -239,7 +232,7 @@ const cardTypes = {
       name: "Guards",
       type: "unit",
       graphics: "https://s-media-cache-ak0.pinimg.com/736x/e2/b0/fd/e2b0fdc1e407c9dbdec23f188d099b77.jpg",
-      cost: { WOOD: 0, IRON: 0, STONE: 0, GOLD: 1  },
+      cost: { wood: 0, iron: 0, stone: 0, gold: 1  },
       move: 1,
       attack: 1,
       defense: 2,
@@ -248,7 +241,7 @@ const cardTypes = {
       name: "Marksmen",
       type: "unit",
       graphics: "http://img.photobucket.com/albums/v197/rakoth/paintings/ascheya.jpg",
-      cost: { WOOD: 1, IRON: 0, STONE: 0, GOLD: 1 },
+      cost: { wood: 1, iron: 0, stone: 0, gold: 1 },
       move: 1,
       attack: 2,
       defense: 1
@@ -257,7 +250,7 @@ const cardTypes = {
       name: "Horsemen",
       type: "unit",
       graphics: "https://s-media-cache-ak0.pinimg.com/736x/f5/fe/af/f5feafd20859d47e1efb6ba4f1dd940f.jpg",
-      cost: { WOOD: 1, IRON: 1, STONE: 0, GOLD: 2 },
+      cost: { wood: 1, iron: 1, stone: 0, gold: 2 },
       move: 2,
       attack: 2,
       defense: 2
@@ -266,7 +259,7 @@ const cardTypes = {
       name: "Bandits",
       type: "unit",
       graphics: "https://s-media-cache-ak0.pinimg.com/736x/4c/09/76/4c09769c201f7cd256ddbeae462bf3ea.jpg",
-      cost: { WOOD: 0, IRON: 0, STONE: 0, GOLD: 0 },
+      cost: { wood: 0, iron: 0, stone: 0, gold: 0 },
       move: 1,
       attack: 1,
       defense: 1
@@ -275,7 +268,7 @@ const cardTypes = {
       name: "Footman",
       type: "unit",
       graphics: "http://img03.deviantart.net/235b/i/2010/251/e/a/men_at_arms_concept_by_neilblade-d2ybvfn.jpg",
-      cost: { WOOD: 0, IRON: 0, STONE: 0, GOLD: 0 },
+      cost: { wood: 0, iron: 0, stone: 0, gold: 0 },
       move: 1,
       attack: 2,
       defense: 2

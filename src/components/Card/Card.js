@@ -11,9 +11,24 @@ import React, { PropTypes } from 'react';
 import cx from 'classnames';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from './Card.scss';
+import woodUrl from './wood.svg';
+import ironUrl from './iron.svg';
+import stoneUrl from './stone.svg';
+import goldUrl from './gold.svg';
+import serfUrl from './serf.svg';
+
 
 function Card(props) {
-  const cardClick = () => ( console.log("cardClick") );
+  console.log("Card props", props);
+
+  const resourceGraphics = {
+    wood: woodUrl,
+    iron: ironUrl,
+    stone: stoneUrl,
+    gold: goldUrl,
+    serf: serfUrl,
+  };
+
   return (
     <div className={ cx(s.card, props.className, s["card--" + ( props.faceUp ? "faceUp" : "faceDown")], s["card--"+props.type], { [s["card--hover"]]: props.hover }, { [s["card--selected"]]: props.selected } ) } onClick={ props.clickAction } >
       <div className={s["card-frontFace"]} >
@@ -32,9 +47,12 @@ function Card(props) {
         </div>
         <div className={s["card-frontFace-footer"]} >
           <div className={s["card-frontFace-name"]} >{props.name}</div>
-          { Object.keys(props.cost).reduce( (previous = 0, item) => ( previous + item.amount ), 0 ) && 
+          { Object.keys(props.cost).reduce( (previous, key) => ( previous || props.cost[key] > 0 ), false ) && 
             <div className={s["card-frontFace-cost"]} >
-              {props.cost.map( (item) => ( <span className={s["card-frontFace-cost-"+item.resource]} >{item.amount}x {item.resource}</span> ) )}
+              {Object.keys(props.cost).reduce( (prev, key) => ( props.cost[key] > 0 ? [
+                ...prev,
+                (<span className={s["card-frontFace-cost-"+key]} >{props.cost[key]} <img src={resourceGraphics[key]} /></span>)
+              ] : prev ), [] )}
             </div> || null
           }
         </div>
