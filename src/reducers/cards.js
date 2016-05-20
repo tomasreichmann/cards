@@ -18,12 +18,58 @@ const updateLast = (arr, updateWith) => {
   return arr.map( (item, index) => (
     index === arr.length-1 ? Object.assign({}, item, updateWith) : item
   ) );
-}
+};
+
+const countResources = (arr) => (
+  arr.reduce(
+    (prev, item) => {
+      if(item.resource){
+        return Object.keys(item.resource).reduce(
+          (prev, key) => ( { ...prev, [key]: prev[key] + item.resource[key] } ),
+          prev
+        );
+      } else {
+        return prev
+      }
+    },
+    { wood: 0, stone: 0, iron: 0, serf: 0, gold: 0 }
+  )
+);
+
+// return spare resources after deducting card cost or false if not enough resources are available
+const isAffordable = (card, resources) => (
+  Object.keys(card.cost).reduce(
+    (spareResources, key) => {
+      return spareResources &&
+      (spareResources[key] - card.cost[key] >= 0) &&
+      { ...spareResources, [key]: spareResources[key] - card.cost[key] }
+    },
+    Object.assign({}, resources )
+  )
+);
+
+const updateAffordable = (supply, resources, extendAffordableBy, extendUnaffordableBy) => (
+  supply.map( (stack) => {
+    let lastCard = stack[stack.length-1];
+    console.log("isAffordable", isAffordable(lastCard, resources) );
+    return [
+      ...stack.slice(0, stack.length-1),
+      Object.assign( {}, lastCard, isAffordable(lastCard, resources) ? extendAffordableBy : extendUnaffordableBy)
+    ];
+  } )
+);
+
+const updateAffordableState = (state) => (
+  {
+    ...state,
+    supply: updateAffordable(state.supply, countResources(state.hand), { highlighted: true }, { highlighted: false } )
+  }
+);
 
 const cardClickHandlers = {
   hand: (state, key, index) => {
     console.log("cardClickHandlers hand", key, index);
-    
+    console.log( "countResources", countResources( state.hand ) );
     return {
       ...state,
       hand: [
@@ -32,8 +78,30 @@ const cardClickHandlers = {
         ...state.hand.slice(index+1),
       ],
     }
+  },
+  supply: (state, key, index) => {
+    // selecting a card to buy
+    console.log("cardClickHandlers supply", key, index);
+    console.log( "countResources", countResources( state.hand ) );
+    // select cards from hand that will be used as a payment for the selected card
+    return {
+      ...state,
+      supply: state.supply.map( (stack, stackIndex) => {
+        let lastIndex = stack.length-1;
+        let lastCard = stack[lastIndex];
+        return [
+          ...stack.slice(0, lastIndex),
+          Object.assign(
+            {},
+            lastCard,
+            (isAffordable(lastCard, countResources( state.hand ) ) && index === stackIndex + "-" + lastIndex) ?
+            { selected: true, highlight: false } : { selected: false } )
+        ]
+      } ),
+      hand: state.hand,
+    }
   }
-}
+};
 
 const cardTypes = {
   resources: {
@@ -42,8 +110,7 @@ const cardTypes = {
       graphics: "http://preview.turbosquid.com/Preview/2014/05/20__17_27_37/wooden_beams_c_0000.jpgb887479b-935a-4f6e-b722-970544f474a0Original.jpg",
       type: "resource",
       resource: {
-        type: WOOD,
-        amount: 1
+        [WOOD]: 1
       }
     },
     stone: {
@@ -51,8 +118,7 @@ const cardTypes = {
       graphics: "https://cdn1.artstation.com/p/assets/images/images/001/848/817/large/gavin-bartlett-gavinbartlett-rock-03-2016-render-01.jpg?1453684542",
       type: "resource",
       resource: {
-        type: STONE,
-        amount: 1
+        [STONE]: 1
       }
     },
     iron: {
@@ -60,8 +126,7 @@ const cardTypes = {
       graphics: "http://media-dominaria.cursecdn.com/attachments/143/922/635769989532453054.jpg",
       type: "resource",
       resource: {
-        type: IRON,
-        amount: 1
+        [IRON]: 1
       }
     },
     serf: {
@@ -69,8 +134,7 @@ const cardTypes = {
       graphics: "http://tes.riotpixels.com/skyrim/artwork/concept-a/large/NCostumeMF01.jpg",
       type: "resource",
       resource: {
-        type: SERF,
-        amount: 1
+        [SERF]: 1
       }
     },
     gold: {
@@ -78,8 +142,7 @@ const cardTypes = {
       graphics: "http://www.blirk.net/wallpapers/1600x1200/gold-wallpaper-4.jpg",
       type: "resource",
       resource: {
-        type: GOLD,
-        amount: 1
+        [GOLD]: 1
       }
     }
   },
@@ -319,42 +382,44 @@ decks.supply = decks.supply.map( (item, index) => (
 // console.log("decks", decks.supply);
 
 export default function cards(state = decks, action) {
-  switch (action.type) {
-    case CARDS_CLICK:
-    let key = action.payload.key;
-      console.log(CARDS_CLICK, action.payload);
-      return key in cardClickHandlers ? cardClickHandlers[key](state, key, action.payload.index) : state;
+  return updateAffordableState( ((state) => {
+    switch (action.type) {
+      case CARDS_CLICK:
+      let key = action.payload.key;
+        console.log(CARDS_CLICK, action.payload);
+        return key in cardClickHandlers ? cardClickHandlers[key](state, key, action.payload.index) : state;
 
-    case CARDS_SHUFFLE:
-      return {
-        ...state,
-        [action.payload]: shuffle( state[action.payload] ),
-      };
+      case CARDS_SHUFFLE:
+        return {
+          ...state,
+          [action.payload]: shuffle( state[action.payload] ),
+        };
 
-    case CARDS_MOVE_CARD:
-      return {
-        ...state,
-        [action.payload.from]: [
-          ...state[action.payload.from].slice(0, action.payload.index),
-          ...state[action.payload.from].slice(action.payload.index+1)
-        ],
-        [action.payload.to]: [
-          ...state[action.payload.to],
-          state[action.payload.from][action.payload.index]
-        ],
-      };
+      case CARDS_MOVE_CARD:
+        return {
+          ...state,
+          [action.payload.from]: [
+            ...state[action.payload.from].slice(0, action.payload.index),
+            ...state[action.payload.from].slice(action.payload.index+1)
+          ],
+          [action.payload.to]: [
+            ...state[action.payload.to],
+            state[action.payload.from][action.payload.index]
+          ],
+        };
 
-    case CARDS_SHOW_FACE:
-      let index = action.payload.key;
-      return {
-        ...state,
-        [action.payload.key]: state[action.payload.key].map( (item) => ( {
-          ...item,
-          faceUp: action.payload.faceUp
-        } ) ),
-      };
+      case CARDS_SHOW_FACE:
+        let index = action.payload.key;
+        return {
+          ...state,
+          [action.payload.key]: state[action.payload.key].map( (item) => ( {
+            ...item,
+            faceUp: action.payload.faceUp
+          } ) ),
+        };
 
-    default:
-      return state;
-  }
+      default:
+        return updateAffordableState(state);
+    }
+  })(state) );
 }

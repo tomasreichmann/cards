@@ -19,7 +19,7 @@ import serfUrl from './serf.svg';
 
 
 function Card(props) {
-  console.log("Card props", props);
+  //console.log("Card props", props);
 
   const resourceGraphics = {
     wood: woodUrl,
@@ -30,7 +30,18 @@ function Card(props) {
   };
 
   return (
-    <div className={ cx(s.card, props.className, s["card--" + ( props.faceUp ? "faceUp" : "faceDown")], s["card--"+props.type], { [s["card--hover"]]: props.hover }, { [s["card--selected"]]: props.selected } ) } onClick={ props.clickAction } >
+    <div
+      className={ cx(
+        s.card,
+        props.className,
+        s["card--" + ( props.faceUp ? "faceUp" : "faceDown")],
+        s["card--"+props.type],
+        { [s["card--hover"]]: props.hover },
+        { [s["card--selected"]]: props.selected },
+        { [s["card--highlighted"]]: props.highlighted }
+      ) }
+      onClick={ props.clickAction }
+    >
       <div className={s["card-frontFace"]} >
         { props.labels.length && 
           <div className={s["card-frontFace-labels"]} >
@@ -51,7 +62,7 @@ function Card(props) {
             <div className={s["card-frontFace-cost"]} >
               {Object.keys(props.cost).reduce( (prev, key) => ( props.cost[key] > 0 ? [
                 ...prev,
-                (<span className={s["card-frontFace-cost-"+key]} >{props.cost[key]} <img src={resourceGraphics[key]} /></span>)
+                (<span key={key} className={s["card-frontFace-cost-"+key]} >{props.cost[key]} <img src={resourceGraphics[key]} /></span>)
               ] : prev ), [] )}
             </div> || null
           }
