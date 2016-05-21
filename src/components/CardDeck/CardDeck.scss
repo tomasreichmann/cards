@@ -26,6 +26,7 @@
 }
 
 $card-shift: -202px;
+$card-shift-large: -240px;
 
 .stack {
 	position: relative;
@@ -57,3 +58,13 @@ $card-shift: -202px;
 	}
 }
 
+.type-board {
+	.title {
+		margin-bottom: 60px;
+	}
+	.stack {
+		.card + .card {
+			margin-top: $card-shift-large;
+		}
+	}
+}

@@ -133,15 +133,20 @@
   }
 }
 
-.card--selected .card-frontFace {
-  border-color: #a66;
-  box-shadow: 0 0 8px 2px #c88;
-  transform: translate3d(0, -20px, 0);
+.card--highlighted {
+  cursor: pointer;
+  .card-frontFace, .card-backFace {
+    border-color: #68a;
+    box-shadow: 0 0 8px 2px #68f;
+  }
 }
 
-.card--highlighted .card-frontFace {
-  border-color: #66a;
-  box-shadow: 0 0 8px 2px #88a;
+.card--selected {
+  transform: translate3d(0, -20px, 0);
+  .card-frontFace, .card-backFace {
+    border-color: #a66;
+    box-shadow: 0 0 8px 2px #c88;
+  }
 }
 
 .card--hover {

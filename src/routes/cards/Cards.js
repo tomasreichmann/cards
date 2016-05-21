@@ -21,7 +21,7 @@ function Cards(props, context) {
   context.setTitle(title);
 
   const clickAction = (index, key) => {
-    console.log("clickAction", key, index, props.cardClick);
+    console.log("clickAction", key, index);
     props.cardClick(key, index);
   }
 

@@ -18,7 +18,7 @@ function CardDeck(props) {
   )
   return (
     <div className={ cx(s.root, props.className, props.type && s["type-" + props.type ]) } >
-      { props.title && <h2>{props.title}</h2> }
+      { props.title && <h2 className={ s.title } >{props.title}</h2> }
       {props.cards.map( (item, index) => ( item.constructor === Array ? <div className={s.stack} key={index} >{ item.map( (item, index) => ( cardTemplate(item, index) ) ) }</div> : cardTemplate(item, index) ) )}
     </div>
   );

@@ -8,3 +8,4 @@ export const IRON = 'iron';
 export const SERF = 'serf';
 export const STONE = 'stone';
 export const GOLD = 'gold';
+export const MAX_BUILDING_LEVEL = 4;

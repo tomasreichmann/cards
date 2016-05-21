@@ -45,12 +45,12 @@ function Card(props) {
       <div className={s["card-frontFace"]} >
         { props.labels.length && 
           <div className={s["card-frontFace-labels"]} >
-            {props.labels.map( (item) => ( <span className={s["card-frontFace-labels-"+item.type]} ></span> ) )}
+            {props.labels.map( (item, index) => ( <span key={index} className={s["card-frontFace-labels-"+item.type]} ></span> ) )}
           </div> || null
         }
         { props.tokenSlots.length && 
           <div className={s["card-frontFace-tokens"]} >
-            {props.tokenSlots.map( (item) => ( item.token === undefined ? <span className={s["card-frontFace-labels-empty"+item.type]} ></span> : <span className={s["card-frontFace-labels-"+item.token.type]} ></span> ) )}
+            {props.tokenSlots.map( (item, index) => ( item.token === undefined ? <span key={index} className={s["card-frontFace-labels-empty"+item.type]} ></span> : <span className={s["card-frontFace-labels-"+item.token.type]} ></span> ) )}
           </div> || null
         }
         <div className={s["card-frontFace-graphics"]} >
