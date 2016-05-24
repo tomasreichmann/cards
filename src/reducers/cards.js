@@ -21,6 +21,49 @@ const updateLast = (arr, updateWith) => {
   ) );
 };
 
+const findCardByIndex = (arr, matchIndex) => (
+  matchIndex.toString().split("-")
+    .map( (item) => ( parseInt(item) ) )
+    .reduce( (arr, matchIndex) => (
+      arr[matchIndex]
+    ), arr )
+);
+
+const updateCardByIndex = (arr, matchIndex, updateWith) => {
+  let indexPartials = matchIndex.toString().split("-")
+    .map( (item) => ( parseInt(item) ) )
+  let output = [
+    ...arr.slice( 0, indexPartials[0] ),
+    (indexPartials.length === 1) ?
+      Object.assign({}, arr[ indexPartials[0] ], updateWith) :
+      updateCardByIndex( arr[ indexPartials[0] ], indexPartials.slice(1), updateWith )
+    ,
+    ...arr.slice( indexPartials[0] + 1 ),
+  ];
+  return output
+};
+
+const findSelected = (state) => {
+  let reduceArray = (match, item, index) => (
+    match || (() => {
+      if(item.constructor === Array){
+        let matchedResult = item.reduce( reduceArray, match );
+        return matchedResult && { ...matchedResult, selectedIndex: index + "-" + matchedResult.selectedIndex }
+      } else {
+        return item.selected === true && { selectedCard: item, selectedIndex: index }
+      }
+    } )() // maybe there should be false/true?
+  );
+  let output = [ "supply", "hand", "board" ].reduce( (match, deckKey) => (
+    match || (() => {
+      let matchedResult = state[deckKey].reduce( reduceArray, match );
+      return matchedResult && { ...matchedResult, selectedDeck: deckKey }
+    })()
+  ), false );
+  //console.log("findSelected output", output);
+  return output
+};
+
 const countResources = (arr) => (
   arr.reduce(
     (prev, item) => {
@@ -59,11 +102,127 @@ const updateAffordable = (supply, resources, extendAffordableBy, extendUnafforda
   } )
 );
 
-const updateHighlights = (state) => (
-  {
-    ...state,
-    supply: updateAffordable(state.supply, countResources(state.hand), { highlighted: true }, { highlighted: false } )
+const isActiveBoardCard = (card, owner) => (
+  // unit with moves left
+  // TODO filter by owner
+  card.type === "unit" && card.movesLeft > 0
+);
+
+const updateActiveBoardCards = (board, extendActiveBy, extendInactiveBy) => (
+  board.map( (stack) => (
+    stack.map( (item, index) => (
+      Object.assign({}, item, isActiveBoardCard(item) ? extendActiveBy : extendInactiveBy)
+    ) )
+  ) )
+);
+
+const isActiveHandCard = (card, owner) => (
+  // unit with moves left
+  card.type === "unit"
+);
+
+const updateActiveHandCards = (hand, extendActiveBy, extendInactiveBy) => (
+  hand.map( (card) => (
+    Object.assign( {}, card, isActiveHandCard(card) ? extendActiveBy : extendInactiveBy)
+  ) )
+);
+
+const unHighlightHand = (hand) => (
+  hand.map( (item, index) => (
+    Object.assign({}, item, { highlighted: false })
+  ) )
+);
+
+const unHighlightSupply = (supply) => (
+  supply.map( (stack, stackIndex) => (
+    stack.map( (item, index) => (
+      Object.assign({}, item, { highlighted: false })
+    ) )
+  ) )
+);
+
+const updateHighlights = (state) => {
+  console.log("updateHighlights", state);
+  const { selectedDeck, selectedCard, selectedIndex} = findSelected(state);
+
+  if(selectedCard){
+    // if selected supply card or hand unit, highlight placement
+    if( selectedDeck === "supply" || (selectedDeck === "hand" && selectedCard.type === "unit" ) ){
+      console.log("updateHighlights if selected supply card or hand unit, highlight placement")
+      return {
+        ...state,
+        board: state.board.map( (stack, stackIndex) => (
+          stack.map( (item, index) => {
+            let lastIndex = stack.length-1;
+            let isLastFromStack = index === lastIndex;
+            let isSelectedValidPlacement = isValidPlacement(selectedCard, item, stack);
+            // console.log("isSelectedValidPlacement", isSelectedValidPlacement);
+            let highlighted = isLastFromStack && isSelectedValidPlacement;
+            return item.highlighted !== highlighted ? Object.assign({}, item, { highlighted: highlighted }) : item
+          } )
+        ) ),
+        // unhighlight supply
+        supply: unHighlightSupply(state.supply),
+        // unhighlight hand
+        hand: unHighlightHand(state.hand),
+      } 
+    }
+    // if selected board unit, highlight movement options
+    if( selectedDeck === "board" || selectedCard.type === "unit" ){
+      const selectedStackIndex = parseInt(selectedIndex.toString().split("-")[0]);
+      return {
+        ...state,
+        board: state.board.map( (stack, stackIndex) => {
+          // console.log(
+          //   "item position",
+          //   selectedStackIndex,
+          //   "board position",
+          //   stackIndex,
+          //   "not too far left",
+          //   stackIndex >= (selectedStackIndex - selectedCard.movesLeft),
+          //   "not too far right",
+          //   stackIndex <= (selectedStackIndex + selectedCard.movesLeft)
+          // );
+          return stack.map( (item, index) => {
+            let lastIndex = stack.length-1;
+            let isLastFromStack = index === lastIndex;
+            let highlighted = isLastFromStack &&
+              (stackIndex >= (selectedStackIndex - selectedCard.movesLeft)) &&
+              (stackIndex <= (selectedStackIndex + selectedCard.movesLeft)) &&
+              (stackIndex !== selectedStackIndex)
+            ;
+            return item.highlighted !== highlighted ? Object.assign({}, item, { highlighted: highlighted }) : item
+          } );
+        }),
+        // unhighlight supply
+        supply: unHighlightSupply(state.supply),
+        // unhighlight hand
+        hand: unHighlightHand(state.hand),
+      } 
+    }
   }
+  // if no card selected,
+  // highlight affordable supply cards
+  // highlight placeable units from hand
+  // highlight movable units on board
+  console.log("updateHighlights no card selected");
+  return {
+    ...state,
+    board: updateActiveBoardCards(state.board, { highlighted: true }, { highlighted: false } ),
+    supply: updateAffordable(state.supply, countResources(state.hand), { highlighted: true }, { highlighted: false } ),
+    hand: updateActiveHandCards(state.hand, { highlighted: true }, { highlighted: false } ),
+  }
+};
+
+const deselect = (state, deckKey, index, selectedValue) => (
+  index ? {
+    ...state,
+    [deckKey]: updateCardByIndex( state[deckKey], index, { selected: !!selectedValue })
+  } : state
+);
+
+const select = (state, deckKey, index) => (
+  deselect(state, deckKey, index, true)
 );
 
 const isValidPlacement = (supplyCard, boardCard, boardStack) => {
@@ -75,7 +234,6 @@ const isValidPlacement = (supplyCard, boardCard, boardStack) => {
   supplyCard = Object.assign({ placement: [{}] }, supplyCard);
   // add level to boardCard
   boardCard = Object.assign({}, boardCard, { level: boardStack.indexOf(boardCard) });
-  console.log("isValidPlacement", supplyCard, boardCard);
   // no placement on enemies
   if( boardCard.type === "unit" && boardCard.owner === "enemy" ){
     console.warn("no placement on enemies", boardCard.level, MAX_BUILDING_LEVEL);
@@ -98,7 +256,6 @@ const isValidPlacement = (supplyCard, boardCard, boardStack) => {
   }
   return supplyCard.placement.reduce( (isValid, condition) => (
     isValid || Object.keys(condition).reduce( (isConditionValid, key) => (
-      console.log( "isConditionValid", isConditionValid, key, boardCard[key], condition[key] ) &&
       isConditionValid && 
       key === "level" ?
       boardCard[key] <= condition[key] :
@@ -107,102 +264,14 @@ const isValidPlacement = (supplyCard, boardCard, boardStack) => {
   ), false )
 };
 
-const cancelSupplyCardSelection = (state) => (
-  {
-    ...state,
-    supply: state.supply.map( (stack) => (
-      stack.map( (item) => ( Object.assign({}, item, { selected: false }) ) )
-    ) ),
-    board: state.board.map( (stack) => (
-      stack.map( (item) => ( Object.assign({}, item, { highlight: false }) ) )
-    ) ),
-  }
-);
-
-const handCardClickHandler = (state, key, index) => {
-  console.log("cardClickHandlers", key, index);
-  console.log( "countResources", countResources( state.hand ) );
-  let selectedCard = state.hand[index];
-  let stateUpdate = {};
-  if( selectedCard.type === "unit"){
-    stateUpdate = {
-      board: state.board.map( (stack, stackIndex) => (
-        stack.map( (item, index) => {
-          let lastIndex = stack.length-1;
-          let isLastFromStack = index === lastIndex;
-          let isSelectedValidPlacement = isValidPlacement(selectedCard, item, stack);
-          console.log("isSelectedValidPlacement", isSelectedValidPlacement);
-          let highlighted = isLastFromStack && isSelectedValidPlacement;
-          return Object.assign({}, item, { highlighted: highlighted })
-        } )
-      ) )
-    }
-  }
-  return {
-    ...state,
-    ...stateUpdate,
-    hand: [
-      ...state.hand.slice(0,index),
-      Object.assign( {}, selectedCard, { selected: !selectedCard.selected } ),
-      ...state.hand.slice(index+1),
-    ],
-  }
-};
-
-const supplyCardClickHandler = (state, key, index) => {
-  console.log("cardClickHandlers", key, index);
-  console.log( "countResources", countResources( state.hand ) );
-  let isSelectedCardAffordable = false;
-  let selectedCard;
-  let cardIsAlreadySelected = false;
-  
-  return {
-    ...state,
-    // select the clicked card from supply if it is affordable
-    // deselect if already selected
-    supply: state.supply.map( (stack, stackIndex) => {
-      let lastIndex = stack.length-1;
-      let lastCard = stack[lastIndex];
-      let isSelectedCard = index === stackIndex + "-" + lastIndex;
-      if(isSelectedCard){
-        selectedCard = lastCard;
-        cardIsAlreadySelected = lastCard.selected === true;
-        isSelectedCardAffordable = isAffordable(lastCard, countResources( state.hand ) );
-      }
-      return [
-        ...stack.slice(0, lastIndex),
-        Object.assign(
-          {},
-          lastCard,
-          ( isSelectedCard && isSelectedCardAffordable && !cardIsAlreadySelected ) ?
-          { selected: true, highlighted: false } : { selected: false }
-        )
-      ]
-    } ),
-    // TODO select cards from hand that will be used as a payment for the selected card
-    // watch for cardIsAlreadySelected
-    hand: state.hand, 
-    // highlight possible card placements
-    board: state.board.map( (stack, stackIndex) => (
-      stack.map( (item, index) => {
-        let lastIndex = stack.length-1;
-        let isLastFromStack = index === lastIndex;
-        let isSelectedValidPlacement = isValidPlacement(selectedCard, item, stack);
-        console.log("isSelectedValidPlacement", isSelectedValidPlacement);
-        let highlighted = isLastFromStack && !cardIsAlreadySelected && isSelectedCardAffordable && isSelectedValidPlacement;
-        return Object.assign({}, item, { highlighted: highlighted })
-      } )
-    ) )
-  }
-};
-
-const placeCardOnBoard = (state, clickedStackIndex, clickedCardIndex, selectedSourceCard, sourceDeck) => {
+const placeCardOnBoard = (state, clickedStackIndex, clickedCardIndex, selectedDeck, selectedCard, selectedIndex, moveCard) => {
   let spentResources = [];
+  const selectedStackIndex = parseInt(selectedIndex.toString().split("-")[0]);
   
   return {
     ...state,
     supply: 
-      sourceDeck == "supply" ?
+      selectedDeck == "supply" ?
       state.supply.map( (stack) => (
         updateLast( 
           stack.filter( (item, index) => (!item.selected) ),
@@ -212,22 +281,27 @@ const placeCardOnBoard = (state, clickedStackIndex, clickedCardIndex, selectedSo
       state.supply
     ,
     board: state.board.map( (stack, stackIndex) => {
-      let newStack = stack.map( (item) => ( Object.assign({}, item, { highlighted: false }) ) );
-      // if target stack, add selected supply card
+      let newStack = stack;
+      // if target stack, add selected supply card, place supply card
       if (stackIndex === clickedStackIndex){
+        console.log( "movesLeft", selectedCard.movesLeft - Math.abs(selectedStackIndex - clickedStackIndex) );
         newStack = [
           ...updateLast(newStack, { hover: false }),
-          // add selected card to the board and reset it`s selection and highlights
-          Object.assign({}, selectedSourceCard, { selected: false, highlighted: false })
+          // add selected card to the board and reset it`s selection
+          Object.assign({}, selectedCard, { selected: false, hover: true }, moveCard && { movesLeft: selectedCard.movesLeft - Math.abs(selectedStackIndex - clickedStackIndex) } ),
         ];
+      }
+      // remove card from the original position
+      if(moveCard && stackIndex === selectedStackIndex){
+        newStack = newStack.slice(0, -1);
       }
       return newStack;
     } ),
     // remove resources from hand and return them to the bank if selected card comes from supply
     // or remove selected card from hand
-    hand: sourceDeck == "supply" ?
-      Object.keys(selectedSourceCard.cost).reduce( (reducedHand, resourceType) => {
-        let remainingCost = selectedSourceCard.cost[resourceType];
+    hand: selectedDeck == "supply" ?
+      Object.keys(selectedCard.cost).reduce( (reducedHand, resourceType) => {
+        let remainingCost = selectedCard.cost[resourceType];
         // filter cards from hand until cost is paid
         return reducedHand.filter( (item) => {
           // filter out if correct type and card not fully paid
@@ -240,63 +314,68 @@ const placeCardOnBoard = (state, clickedStackIndex, clickedCardIndex, selectedSo
           return filterIn;
         } )
       }, state.hand ) :
-      state.hand.filter( (item) => ( item !== selectedSourceCard ) ),
+      state.hand.filter( (item) => ( item !== selectedCard ) ),
     bank: [
       ...state.bank,
       spentResources
     ]
   }
-}
-const boardCardClickHandler = (state, key, index) => {
-  console.log("cardClickHandlers", key, index);
-  console.log( "countResources", countResources( state.hand ) );
-  // find selected supply card
-  // remove the supply card from the stack
-  let clickedStackIndex = parseInt(index.split("-")[0]);
-  let clickedCardIndex = parseInt(index.split("-")[1]);
-  let clickedBoardCard = state.board[clickedStackIndex][clickedCardIndex];
-  console.log( "clickedBoardCard", clickedBoardCard );
-
-  // look for the selected card
-  // check hand
-  let selectedSourceCard;
-  const selectedFilter = (item) => ( item.selected && (selectedSourceCard = item) );
-  let sourceDeck = state.hand.filter( selectedFilter ).length ? "hand" : undefined;
-  // check supply
-  sourceDeck = 
-    sourceDeck ||
-    state.supply.filter( (stack) => ( stack.filter( selectedFilter ).length ) ).length && "supply" ||
-    undefined
-  ;
-  console.log( "sourceDeck", sourceDeck, "selectedSourceCard", selectedSourceCard);
-
-  // check if clicked card is highlighted and there is a selected card => place card on board
-  if( clickedBoardCard.highlighted && selectedSourceCard){
-    return placeCardOnBoard(state, clickedStackIndex, clickedCardIndex, selectedSourceCard, sourceDeck);
-  }
-  // check if clicked card is highlighted and a unit => move unit
-  if( clickedBoardCard.highlighted ){
-    return placeCardOnBoard(state, clickedStackIndex, clickedCardIndex, clickedBoardCard);
-  }
-  return state
 };
 
-const cardClickHandlers = {
-  hand: handCardClickHandler,
-  supply: supplyCardClickHandler,
-  board: boardCardClickHandler
+const cardActionHandler = (state, clickedDeck, clickedIndex, clickedCard) => {
+  const { selectedDeck, selectedCard, selectedIndex} = findSelected(state);
+  const splitClickedIndex = clickedIndex.toString().split("-").map( (item) => ( parseInt(item) ) );
+  const clickedStackIndex = splitClickedIndex[0];
+  const clickedCardIndex = splitClickedIndex[1];
+  console.log("cardActionHandler", "state", state, "clickedDeck", clickedDeck, "clickedIndex", clickedIndex, "clickedCard", clickedCard, "selectedDeck", selectedDeck, "selectedCard", selectedCard, "selectedIndex", selectedIndex);
+  console.log("updateSelection", "selectedDeck", selectedDeck, "clickedDeck", clickedDeck );
+  // deselect if already selected
+  if( clickedCard === selectedCard ){
+    return deselect( state, clickedDeck, clickedIndex );
+  }
+  // do nothing if clicked card is not highlighted
+  if( !clickedCard.highlighted ){ return state }
+  // select if no selected card and highlighted in supply, hand, selected card and clicked card are both on board
+  if( !selectedCard && clickedCard.highlighted && (clickedDeck === "supply" || clickedDeck === "hand" || (clickedDeck === "board") ) ){
+    // select highlighted card
+    return select( 
+      // deselect previously selected
+      deselect(state, selectedDeck, selectedIndex)
+      , clickedDeck, clickedIndex
+    );
+  };
+  // if selected card is in supply or hand and clicked card on board and is highlighted, move card to board
+  if( (selectedDeck === "supply" || selectedDeck === "hand") && clickedDeck == "board" && clickedCard.highlighted ){
+    return placeCardOnBoard(state, clickedStackIndex, clickedCardIndex, selectedDeck, selectedCard, selectedIndex);
+  }
+  // move a selected card to highlighted card on board
+  if( selectedDeck === "board" && clickedDeck == "board" && clickedCard.highlighted && !clickedCard.selected){
+    console.log("move card");
+    return placeCardOnBoard(state, clickedStackIndex, clickedCardIndex, selectedDeck, selectedCard, selectedIndex, true);
+  }
+  return state;
 };
 
 const cardDecks = {
   "supply": [
-    ...Object.keys(cardTypes.buildings).map( (key) => ( { card: cardTypes.buildings[key], amount: 10, stack: true } ) ),
-    ...Object.keys(cardTypes.units).map( (key) => ( { card: cardTypes.units[key], amount: 10, stack: true } ) )
+    ...Object.keys(cardTypes.buildings).map( (key) => (
+      { card: cardTypes.buildings[key], amount: 10, stack: true }
+    ) ),
+    ...Object.keys(cardTypes.units).map( (key) => (
+      { card: cardTypes.units[key], amount: 10, stack: true, extendBy: { movesLeft: 2 } }
+    ) )
   ],
-  "board": Object.keys(cardTypes.lands).map( (key) => ( { card: cardTypes.lands[key], amount: 3 } ) ),
-  "bank": Object.keys(cardTypes.resources).map( (key) => ( { card: cardTypes.resources[key], amount: 20 } ) ),
+  "board": Object.keys(cardTypes.lands).map( (key) => (
+    { card: cardTypes.lands[key], amount: 3 }
+  ) ),
+  "bank": Object.keys(cardTypes.resources).map( (key) => (
+    { card: cardTypes.resources[key], amount: 20 }
+  ) ),
   "hand": [
-    ...Object.keys(cardTypes.resources).map( (key) => ( { card: cardTypes.resources[key], amount: 10, extendBy: { hover: true } } ) ),
-    { card: cardTypes.units.serf, amount: 2, extendBy: { hover: true } }
+    ...Object.keys(cardTypes.resources).map( (key) => (
+      { card: cardTypes.resources[key], amount: 10, extendBy: { hover: true } }
+    ) ),
+    { card: cardTypes.units.serf, amount: 2, extendBy: { hover: true, movesLeft: 0 } }
   ],
 };
 
@@ -333,11 +412,13 @@ const initializeDecks = () => {
 }
 
 export default function cards(state = initializeDecks(), action) {
+  const { key, index } = (action || {})["payload"] || {};
   switch (action.type) {
     case CARDS_CLICK:
-    let key = action.payload.key;
-      console.log(CARDS_CLICK, action.payload);
-      return key in cardClickHandlers ? updateHighlights( cardClickHandlers[key](state, key, action.payload.index) ) : state;
+      let clickedCard = findCardByIndex(state[key], index );
+      return updateHighlights(
+        cardActionHandler( state, key, index, clickedCard )
+      );
 
     case CARDS_SHUFFLE:
       return {
@@ -345,24 +426,10 @@ export default function cards(state = initializeDecks(), action) {
         [action.payload]: shuffle( state[action.payload] ),
       };
 
-    case CARDS_MOVE_CARD:
-      return {
-        ...state,
-        [action.payload.from]: [
-          ...state[action.payload.from].slice(0, action.payload.index),
-          ...state[action.payload.from].slice(action.payload.index+1)
-        ],
-        [action.payload.to]: [
-          ...state[action.payload.to],
-          state[action.payload.from][action.payload.index]
-        ],
-      };
-
     case CARDS_SHOW_FACE:
-      let index = action.payload.key;
       return {
         ...state,
-        [action.payload.key]: state[action.payload.key].map( (item) => ( {
+        [key]: state[key].map( (item) => ( {
           ...item,
           faceUp: action.payload.faceUp
         } ) ),

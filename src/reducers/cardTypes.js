@@ -285,10 +285,9 @@ export default {
       type: "unit",
       subType: "serf",
       cost: { wood: 0, iron: 0, stone: 0, gold: 1 },
-      move: 1,
+      move: 2,
       attack: 0,
       defense: 0,
-      placement: [ { type: "land" } ],
     },
   }
 };

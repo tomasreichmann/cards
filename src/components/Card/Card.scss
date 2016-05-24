@@ -49,10 +49,10 @@
   position: relative;
   background-color: #fff;
   border: 1px solid #ddd;
-  font-size: 10px;
+  font-size: 8px;
 
   &-name {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: bold;
   }
 
@@ -73,7 +73,7 @@
     box-sizing: border-box;
     height: 20%;
     padding: 5px 10px;
-    font-size: 10px;
+    font-size: 8px;
     border-top: 1px solid #ddd;
     color: #444;
     .card--resource & {
@@ -142,6 +142,7 @@
 }
 
 .card--selected {
+  cursor: pointer;
   transform: translate3d(0, -20px, 0);
   .card-frontFace, .card-backFace {
     border-color: #a66;
