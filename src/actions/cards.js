@@ -1,9 +1,15 @@
-import { CARDS_SHUFFLE, CARDS_MOVE_CARD, CARDS_SHOW_FACE, CARDS_CLICK } from '../constants';
+import { CARDS_SHUFFLE, CARDS_END_TURN, CARDS_MOVE_CARD, CARDS_SHOW_FACE, CARDS_CLICK } from '../constants';
 
 export function shuffle(key) {
   return {
     type: CARDS_SHUFFLE,
     payload: key,
+  };
+};
+
+export function endTurn() {
+  return {
+    type: CARDS_END_TURN
   };
 };
 
@@ -42,5 +48,6 @@ export default {
 	shuffle,
   moveCard,
 	cardClick,
-	showFace
+	showFace,
+  endTurn
 }

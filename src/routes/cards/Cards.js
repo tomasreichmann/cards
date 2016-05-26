@@ -13,7 +13,7 @@ import s from './Cards.scss';
 import CardDeck from '../../components/CardDeck';
 import Card from '../../components/Card';
 import { connect } from 'react-redux';
-import actions, { shuffle, moveCard, showFace, cardClick } from '../../actions/cards';
+import actions, { shuffle, moveCard, showFace, cardClick, endTurn } from '../../actions/cards';
 
 const title = 'Cards';
 
@@ -41,6 +41,8 @@ function Cards(props, context) {
   const cardsInBoard = props.cards.board.map( (item, index) => (mapStoreToCards(item, index, "board") ) );
   const cardsInHand = props.cards.hand.map( (item, index) => (mapStoreToCards(item, index, "hand") ) );
 
+  console.log("props.endTurn", props.endTurn);
+
   return (
     <div className={s.root}>
       <div className={s.container}>
@@ -53,6 +55,7 @@ function Cards(props, context) {
         <button onClick={ () => ( changeShowFace(true, "hand") ) } >Face Up</button>
         {" "}| <button onClick={ () => ( changeShowFace(false, "hand") ) } >Face Down</button>
         {" "}| <button onClick={ () => ( doShuffle("hand") ) } >Shuffle</button>
+        {" "}| <button onClick={ props.endTurn } >End turn</button>
       </div>
     </div>
   );
@@ -62,6 +65,4 @@ Cards.contextTypes = { setTitle: PropTypes.func.isRequired };
 
 export default connect(state => ({
   cards: state.cards
-}), {
-  shuffle, moveCard, showFace, cardClick
-})( withStyles(s)(Cards) );
+}), actions )( withStyles(s)(Cards) );
