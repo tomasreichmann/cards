@@ -46,8 +46,7 @@ export default {
       type: "land",
       tokenSlots: [],
       production: {
-        type: WOOD,
-        amount: 2
+        [WOOD]: 1
       }
     },
     plains: {
@@ -63,8 +62,7 @@ export default {
       type: "land",
       tokenSlots: [],
       production: {
-        type: STONE,
-        amount: 2
+        [STONE]: 1
       }
     },
     mountains: {
@@ -74,8 +72,7 @@ export default {
       type: "land",
       tokenSlots: [],
       production: {
-        type: IRON,
-        amount: 2
+        [IRON]: 1
       }
     }
   },
@@ -181,6 +178,9 @@ export default {
       graphics: "https://enchantedamerica.files.wordpress.com/2014/09/florida-disneyland-seven-dwarfs-mine-train-rails.jpg",
       cost: { wood: 2, iron: 0, stone: 0, gold: 0 },
       prerequisites: { card: ["blacksmith"] },
+      production: {
+        [IRON]: 2
+      },
       tokenSlots: [],
       labels: [],
       placement: [ { card: "mountains" } ],
@@ -205,6 +205,9 @@ export default {
       graphics: "http://img13.deviantart.net/7364/i/2012/056/2/5/old_sawmill_by_erebus74-d4qx60h.jpg",
       cost: { wood: 2, iron: 0, stone: 0, gold: 0 },
       prerequisites: { card: ["blacksmith"] },
+      production: {
+        [WOOD]: 2
+      },
       tokenSlots: [],
       labels: [],
       placement: [ { card: "forest" } ],
@@ -217,6 +220,9 @@ export default {
       graphics: "https://s-media-cache-ak0.pinimg.com/736x/eb/66/d1/eb66d13d533b94a7bc02bbbd6f18e494.jpg",
       cost: { wood: 2, iron: 0, stone: 0, gold: 0 },
       prerequisites: { card: ["blacksmith"] },
+      production: {
+        [STONE]: 2
+      },
       tokenSlots: [],
       labels: [],
       placement: [ { card: "hills" } ],

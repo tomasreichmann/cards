@@ -46,20 +46,20 @@ function Card(props) {
       onClick={ props.clickAction }
     >
       <div className={s["card-frontFace"]} >
-        { props.labels.length ?
-          <div className={s["card-frontFace-labels"]} >
-            {props.labels.map( (item, index) => ( <span key={index} className={s["card-frontFace-labels-"+item.type]} ></span> ) )}
-          </div> : null
-        }
-        { props.tokenSlots.length ?
-          <div className={s["card-frontFace-tokens"]} >
-            {props.tokenSlots.map( (item, index) => ( item.token === undefined ? <span key={index} className={s["card-frontFace-labels-empty"+item.type]} ></span> : <span className={s["card-frontFace-labels-"+item.token.type]} ></span> ) )}
-          </div> : null
-        }
         <div className={s["card-frontFace-graphics"]} >
           { <img src={ props.graphics } />}
           {
             props.owner !== undefined ? <span className={s["card-owner"]} style={ { borderColor: PLAYER_COLORS[props.owner] } } ></span> : null
+          }
+          { props.labels.length ?
+            <div className={s["card-frontFace-labels"]} >
+              {props.labels.map( (item, index) => ( <span key={index} className={s["card-frontFace-labels-"+item.type]} ></span> ) )}
+            </div> : null
+          }
+          { props.tokenSlots.length ?
+            <div className={s["card-frontFace-tokens"]} >
+              {props.tokenSlots.map( (item, index) => ( item.token === undefined ? <span key={index} className={s["card-frontFace-labels-empty"+item.type]} ></span> : <span className={s["card-frontFace-labels-"+item.token.type]} ></span> ) )}
+            </div> : null
           }
         </div>
         <div className={s["card-frontFace-footer"]} >

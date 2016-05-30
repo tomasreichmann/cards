@@ -32,7 +32,6 @@ const findByContent = (arr, matchObject, findFirst) => {
       //console.log("item matched")
     }
     if(findFirst){
-      console.log("findByContent result", item);
       return item;
     }
     if( item && item.constructor === Array ){
@@ -407,6 +406,30 @@ const getNextPlayerIndex = (activePlayer, players) => {
   return (activePlayer+1) % players.length;
 }
 
+const produceResources = (state) => {
+  console.log("produceResources");
+  let resourceGain = state.board.reduce( (resources, stack) => {
+    // find all serfs (of active owner?) on board
+    return stack.reduce( (resources, card, index) => {
+      if(card.card === "serf"){
+        // get all cards below
+        // find closest land or building
+        let productionCard = stack.slice(0, index).reverse().find( (cardBelow) => ( cardBelow.type === "land" || cardBelow.type === "production" || cardBelow.type === "building" ) );
+        console.log("productionCard", productionCard);
+        if (productionCard && productionCard.production){
+          return Object.keys(productionCard.production).reduce( (total, resourceKey) => (
+            { ...total, [resourceKey]: total[resourceKey] + productionCard.production[resourceKey] }
+          ) ,resources );
+        }
+      }
+      return resources;
+    }, resources );
+  }, { wood: 0, stone: 0, iron: 0 } );
+  console.log("resourceGain", resourceGain );
+  // TODO for each take resources from the bank and to the new players hand
+  return { ...state };
+}
+
 export default function cards(state = gameInitialization(), action) {
   const { key, index } = (action || {})["payload"] || {};
   switch (action.type) {
@@ -431,15 +454,17 @@ export default function cards(state = gameInitialization(), action) {
         ...state,
         [selectedDeck]: updateCardByIndex( state[selectedDeck], selectedIndex, { selected: false } ),
       } : state;
-      return updateHighlights({
-        ...newState,
-        // save previous players hand
-        players: state.players.map( (player, index) => ( index === state.activePlayer ? { ...player, hand: state.hand } : player ) ),
-        // load new players hand
-        hand: state.players[nextPlayerIndex].hand,
-        activePlayer: nextPlayerIndex,
-        round: state++,
-      });
+      return updateHighlights(
+        produceResources({
+          ...newState,
+          // save previous players hand
+          players: state.players.map( (player, index) => ( index === state.activePlayer ? { ...player, hand: state.hand } : player ) ),
+          // load new players hand
+          hand: state.players[nextPlayerIndex].hand,
+          activePlayer: nextPlayerIndex,
+          round: state++,
+        })
+      );
 
     case CARDS_SHOW_FACE:
       return {
