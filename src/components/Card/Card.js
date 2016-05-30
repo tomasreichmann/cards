@@ -16,6 +16,7 @@ import ironUrl from './iron.svg';
 import stoneUrl from './stone.svg';
 import goldUrl from './gold.svg';
 import serfUrl from './serf.svg';
+import { PLAYER_COLORS } from '../../constants';
 
 
 function Card(props) {
@@ -28,6 +29,8 @@ function Card(props) {
     gold: goldUrl,
     serf: serfUrl,
   };
+
+  props.selected && console.log( "owner", props.owner ); 
 
   return (
     <div
@@ -43,28 +46,31 @@ function Card(props) {
       onClick={ props.clickAction }
     >
       <div className={s["card-frontFace"]} >
-        { props.labels.length && 
+        { props.labels.length ?
           <div className={s["card-frontFace-labels"]} >
             {props.labels.map( (item, index) => ( <span key={index} className={s["card-frontFace-labels-"+item.type]} ></span> ) )}
-          </div> || null
+          </div> : null
         }
-        { props.tokenSlots.length && 
+        { props.tokenSlots.length ?
           <div className={s["card-frontFace-tokens"]} >
             {props.tokenSlots.map( (item, index) => ( item.token === undefined ? <span key={index} className={s["card-frontFace-labels-empty"+item.type]} ></span> : <span className={s["card-frontFace-labels-"+item.token.type]} ></span> ) )}
-          </div> || null
+          </div> : null
         }
         <div className={s["card-frontFace-graphics"]} >
           { <img src={ props.graphics } />}
+          {
+            props.owner !== undefined ? <span className={s["card-owner"]} style={ { borderColor: PLAYER_COLORS[props.owner] } } ></span> : null
+          }
         </div>
         <div className={s["card-frontFace-footer"]} >
           <div className={s["card-frontFace-name"]} >{props.name}</div>
-          { Object.keys(props.cost).reduce( (previous, key) => ( previous || props.cost[key] > 0 ), false ) && 
+          { Object.keys(props.cost).reduce( (previous, key) => ( previous || props.cost[key] > 0 ), false ) ?
             <div className={s["card-frontFace-cost"]} >
               {Object.keys(props.cost).reduce( (prev, key) => ( props.cost[key] > 0 ? [
                 ...prev,
                 (<span key={key} className={s["card-frontFace-cost-"+key]} >{props.cost[key]} <img src={resourceGraphics[key]} /></span>)
               ] : prev ), [] )}
-            </div> || null
+            </div> : null
           }
         </div>
       </div>

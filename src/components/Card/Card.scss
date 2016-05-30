@@ -133,6 +133,18 @@
   }
 }
 
+.card-owner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-width: 16px;
+  border-style: solid;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+}
+
 .card--highlighted {
   cursor: pointer;
   .card-frontFace, .card-backFace {

@@ -12,12 +12,13 @@ import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import s from './Cards.scss';
 import CardDeck from '../../components/CardDeck';
 import Card from '../../components/Card';
+import { PLAYER_COLORS } from '../../constants';
 import { connect } from 'react-redux';
 import actions, { shuffle, moveCard, showFace, cardClick, endTurn } from '../../actions/cards';
 
 const title = 'Cards';
 
-function Cards(props, context) {
+function Cards({...props, cards}, context) {
   context.setTitle(title);
 
   const clickAction = (index, key) => {
@@ -37,11 +38,10 @@ function Cards(props, context) {
     item.constructor === Array ? item.map( (item, stackIndex) => ( <Card {...item} clickAction={() => ( clickAction(index+"-"+stackIndex, key) )} /> ) ) : <Card {...item} clickAction={() => ( clickAction(index, key) )}  />
   );
 
-  const cardsInSupply = props.cards.supply.map( (item, index) => (mapStoreToCards(item, index, "supply") ) );
-  const cardsInBoard = props.cards.board.map( (item, index) => (mapStoreToCards(item, index, "board") ) );
-  const cardsInHand = props.cards.hand.map( (item, index) => (mapStoreToCards(item, index, "hand") ) );
-
-  console.log("props.endTurn", props.endTurn);
+  const cardsInSupply = cards.supply.map( (item, index) => (mapStoreToCards(item, index, "supply") ) );
+  const cardsInBoard = cards.board.map( (item, index) => (mapStoreToCards(item, index, "board") ) );
+  const cardsInHand = cards.hand.map( (item, index) => (mapStoreToCards(item, index, "hand") ) );
+  const activePlayerName = <span><span className={s.circle} style={ { backgroundColor: PLAYER_COLORS[cards.activePlayer] } } ></span>&emsp;{cards.players[cards.activePlayer].name}</span>;
 
   return (
     <div className={s.root}>
@@ -51,7 +51,7 @@ function Cards(props, context) {
 
         <CardDeck title="Board" cards={cardsInBoard} key="board" type="board" ></CardDeck>
 
-        <CardDeck title="Hand" cards={cardsInHand} key="hand" type="hand" ></CardDeck>
+        <CardDeck title={ activePlayerName } cards={cardsInHand} key="hand" type="hand" ></CardDeck>
         <button onClick={ () => ( changeShowFace(true, "hand") ) } >Face Up</button>
         {" "}| <button onClick={ () => ( changeShowFace(false, "hand") ) } >Face Down</button>
         {" "}| <button onClick={ () => ( doShuffle("hand") ) } >Shuffle</button>

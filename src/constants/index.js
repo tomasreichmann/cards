@@ -10,3 +10,6 @@ export const SERF = 'serf';
 export const STONE = 'stone';
 export const GOLD = 'gold';
 export const MAX_BUILDING_LEVEL = 4;
+// Coat of arms?
+export const PLAYER_COLORS = [ "#FF0303", "#0042FF", "#1CE6B9", "#540081", "#FFFC01", "#fEBA0E", "#20C000", "#E55BB0", "#959697", "#7EBFF1", "#106246", "#4E2A04" ];
+

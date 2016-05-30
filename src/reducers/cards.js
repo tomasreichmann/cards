@@ -53,7 +53,8 @@ let testArray = [{a: 1}, {b: 2}, {b: 2}, {b: 3}];
 const updateCardByIndex = (arr, matchIndex, updateWith) => {
   let indexPartials = matchIndex.toString().split("-")
     .map( (item) => ( parseInt(item) ) )
-  let output = [
+  ;
+  return [
     ...arr.slice( 0, indexPartials[0] ),
     (indexPartials.length === 1) ?
       Object.assign({}, arr[ indexPartials[0] ], updateWith) :
@@ -61,7 +62,20 @@ const updateCardByIndex = (arr, matchIndex, updateWith) => {
     ,
     ...arr.slice( indexPartials[0] + 1 ),
   ];
-  return output
+};
+
+const removeObjectByIndex = (arr, matchIndex) => {
+  let indexPartials = matchIndex.toString().split("-")
+    .map( (item) => ( parseInt(item) ) )
+  ;
+  return (indexPartials.length === 1) ? [
+    ...arr.slice( 0, indexPartials[0] ),
+    ...arr.slice( indexPartials[0] + 1 ),
+  ] : [
+    ...arr.slice( 0, indexPartials[0] ),
+    removeObjectByIndex( arr[ indexPartials[0] ], indexPartials.slice(1) ),
+    ...arr.slice( indexPartials[0] + 1 ),
+  ];
 };
 
 const findSelected = (state) => {
@@ -136,13 +150,13 @@ const updateAffordableSupply = (state, resources, extendAffordableBy, extendUnaf
 const isActiveBoardCard = (card, owner) => (
   // unit with moves left
   // TODO filter by owner
-  card.type === "unit" && card.movesLeft > 0
+  card.type === "unit" && card.movesLeft > 0 && card.owner === owner
 );
 
-const updateActiveBoardCards = (board, extendActiveBy, extendInactiveBy) => (
+const updateActiveBoardCards = (board, activePlayer, extendActiveBy, extendInactiveBy) => (
   board.map( (stack) => (
     stack.map( (item, index) => (
-      Object.assign({}, item, index === stack.length-1 && isActiveBoardCard(item) ? extendActiveBy : extendInactiveBy)
+      Object.assign({}, item, index === stack.length-1 && isActiveBoardCard(item, activePlayer) ? extendActiveBy : extendInactiveBy)
     ) )
   ) )
 );
@@ -238,10 +252,9 @@ const updateHighlights = (state) => {
   // highlight affordable supply cards
   // highlight placeable units from hand
   // highlight movable units on board
-  // console.log("updateHighlights no card selected");
   return {
     ...state,
-    board: updateActiveBoardCards(state.board, { highlighted: true }, { highlighted: false } ),
+    board: updateActiveBoardCards(state.board, state.activePlayer, { highlighted: true }, { highlighted: false } ),
     supply: updateAffordableSupply(state, countResources(state.hand), { highlighted: true }, { highlighted: false } ),
     hand: updateActiveHandCards(state.hand, { highlighted: true }, { highlighted: false } ),
   }
@@ -269,22 +282,18 @@ const isValidPlacement = (supplyCard, boardCard, boardStack) => {
   boardCard = Object.assign({}, boardCard, { level: boardStack.indexOf(boardCard) });
   // no placement on enemies
   if( boardCard.type === "unit" && boardCard.owner === "enemy" ){
-    // console.warn("no placement on enemies", boardCard.level, MAX_BUILDING_LEVEL);
     return false
   }
   // no placement of buildings on units
   if( boardCard.type === "unit" && supplyCard.type === "building" ){
-    // console.warn("no placement of buildings on units", boardCard.level, MAX_BUILDING_LEVEL);
     return false
   }
   // max 2 military units
   if( supplyCard.type === "unit" && boardCard.type === "unit" && (boardStack[ boardStack.length-2 ] || {})["type"] === "unit" ){
-    // console.warn("max 2 military units", boardCard.level, MAX_BUILDING_LEVEL);
     return false;
   }
   // global building max level limit
   if( boardCard.type === "building" && boardCard.level > MAX_BUILDING_LEVEL ){
-    // console.warn("global building max level limit", boardCard.level, MAX_BUILDING_LEVEL);
     return false;
   }
   return supplyCard.placement.reduce( (isValid, condition) => (
@@ -319,8 +328,13 @@ const placeCardOnBoard = (state, clickedStackIndex, clickedCardIndex, selectedDe
       if (stackIndex === clickedStackIndex){
         newStack = [
           ...updateLast(newStack, { hover: false }),
-          // add selected card to the board and reset it`s selection
-          Object.assign({}, selectedCard, { selected: false, hover: true }, moveCard && { movesLeft: selectedCard.movesLeft - Math.abs(selectedStackIndex - clickedStackIndex) }, !moveCard && selectedCard.movement > 0 && { movesLeft: selectedCard.movement } ),
+          // add selected card to the board and reset it
+          Object.assign({},
+            selectedCard,
+            { selected: false, hover: true, owner: state.activePlayer },
+            moveCard && { movesLeft: selectedCard.movesLeft - Math.abs(selectedStackIndex - clickedStackIndex) },
+            !moveCard && selectedCard.movement > 0 && { movesLeft: selectedCard.movement }
+          ),
         ];
       }
       // remove card from the original position
@@ -388,8 +402,9 @@ const cardActionHandler = (state, clickedDeck, clickedIndex, clickedCard) => {
 };
 
 
-const nextPlayerIndex = (activePlayer, players) => {
-  return activePlayer+1 % players.length;
+const getNextPlayerIndex = (activePlayer, players) => {
+  console.log("getNextPlayerIndex", activePlayer, players, activePlayer+1 % players.length);
+  return (activePlayer+1) % players.length;
 }
 
 export default function cards(state = gameInitialization(), action) {
@@ -408,15 +423,23 @@ export default function cards(state = gameInitialization(), action) {
       };
 
     case CARDS_END_TURN:
-      let newActivePlayer = nextPlayerIndex(state.activePlayer, state.players);
-      return {
+      let nextPlayerIndex = getNextPlayerIndex(state.activePlayer, state.players);
+      console.log("CARDS_END_TURN", nextPlayerIndex, state.players, state.players[nextPlayerIndex]);
+      // deselect a card
+      const { selectedDeck, selectedCard, selectedIndex} = findSelected(state);
+      let newState = selectedCard ? {
         ...state,
+        [selectedDeck]: updateCardByIndex( state[selectedDeck], selectedIndex, { selected: false } ),
+      } : state;
+      return updateHighlights({
+        ...newState,
         // save previous players hand
         players: state.players.map( (player, index) => ( index === state.activePlayer ? { ...player, hand: state.hand } : player ) ),
         // load new players hand
-        hand: state.players[newActivePlayer].hand,
-        activePlayer: newActivePlayer,
-      };
+        hand: state.players[nextPlayerIndex].hand,
+        activePlayer: nextPlayerIndex,
+        round: state++,
+      });
 
     case CARDS_SHOW_FACE:
       return {

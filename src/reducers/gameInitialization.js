@@ -59,13 +59,14 @@ const initializeDecks = () => {
 const initializePlayers = (players, hand) => (
   players.reduce( (state, player) => (
     {
+      ...state,
       players: [ ...state.players, { name: player, hand: hand.map( (item) => ( Object.assign({}, item) ) ) } ]
     }
   ), {
     players: [],
     activePlayer: 0,
     round: 0,
-    hand: [],
+    hand: hand.map( (item) => ( Object.assign({}, item) ) ),
   } ) 
 )
 
