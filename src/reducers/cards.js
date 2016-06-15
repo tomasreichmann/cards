@@ -10,26 +10,23 @@ const findCardByIndex = (arr, matchIndex) => (
 );
 
 const findByContent = (arr, matchObject, findFirst) => {
-  // console.log("findByContent", matchObject);
   let result = findFirst ? false : [];
   itemLoop: for (var index = 0; index < arr.length; index++) {
     let item = arr[index];
 
     if( item && item.constructor === Array ){
-        item = findByContent( item, matchObject, findFirst );
-        if( !item || item.length == 0){
-          continue itemLoop
-        }
+      item = findByContent( item, matchObject, findFirst );
+      if( !item || item.length == 0){
+        continue itemLoop
+      }
     } else {
       for( let property in matchObject ){
         if( matchObject.hasOwnProperty(property) ){
           if(item[property] !== matchObject[property]){
-            // console.log("item didnt match")
             continue itemLoop
           }
         }
       }
-      //console.log("item matched")
     }
     if(findFirst){
       return item;
@@ -40,14 +37,8 @@ const findByContent = (arr, matchObject, findFirst) => {
       item && result.push(item);
     }
   }
-  //console.log("findByContent result", result);
   return result
 };
-let testArray = [{a: 1}, {b: 2}, {b: 2}, {b: 3}];
-// console.log("findByContent #1 b", findByContent(testArray, { b: 2 }, true) );
-// console.log("findByContent #2 [b,b]", findByContent(testArray, { b: 2 }, false) );
-// console.log("findByContent #3 b", findByContent([testArray, testArray], { b: 2 }, true) );
-// console.log("findByContent #4 [b,b,b,b]", findByContent([testArray, testArray], { b: 2 }, false) );
 
 const updateCardByIndex = (arr, matchIndex, updateWith) => {
   let indexPartials = matchIndex.toString().split("-")
@@ -147,9 +138,7 @@ const updateAffordableSupply = (state, resources, extendAffordableBy, extendUnaf
 );
 
 const isActiveBoardCard = (card, owner) => (
-  // unit with moves left
-  // TODO filter by owner
-  card.type === "unit" && card.movesLeft > 0 && card.owner === owner
+  card.type === "unit" && card.movesLeft > 0 && card.owner !== "enemy"
 );
 
 const updateActiveBoardCards = (board, activePlayer, extendActiveBy, extendInactiveBy) => (
@@ -217,16 +206,6 @@ const updateHighlights = (state) => {
       return {
         ...state,
         board: state.board.map( (stack, stackIndex) => {
-          // console.log(
-          //   "item position",
-          //   selectedStackIndex,
-          //   "board position",
-          //   stackIndex,
-          //   "not too far left",
-          //   stackIndex >= (selectedStackIndex - selectedCard.movesLeft),
-          //   "not too far right",
-          //   stackIndex <= (selectedStackIndex + selectedCard.movesLeft)
-          // );
           return stack.map( (item, index) => {
             let lastIndex = stack.length-1;
             let isLastFromStack = index === lastIndex;
@@ -332,7 +311,7 @@ const placeCardOnBoard = (state, clickedStackIndex, clickedCardIndex, selectedDe
             selectedCard,
             { selected: false, hover: true, owner: state.activePlayer },
             moveCard && { movesLeft: selectedCard.movesLeft - Math.abs(selectedStackIndex - clickedStackIndex) },
-            !moveCard && selectedCard.movement > 0 && { movesLeft: selectedCard.movement }
+            !moveCard && selectedCard.movement > 0 && { movesLeft: 0 }
           ),
         ];
       }
@@ -360,10 +339,7 @@ const placeCardOnBoard = (state, clickedStackIndex, clickedCardIndex, selectedDe
         } )
       }, state.hand ) :
       state.hand.filter( (item) => ( item !== selectedCard ) ),
-    bank: [
-      ...state.bank,
-      spentResources
-    ]
+    bank: returnResourcesToBank(state.bank, spentResources)
   }
 };
 
@@ -372,8 +348,6 @@ const cardActionHandler = (state, clickedDeck, clickedIndex, clickedCard) => {
   const splitClickedIndex = clickedIndex.toString().split("-").map( (item) => ( parseInt(item) ) );
   const clickedStackIndex = splitClickedIndex[0];
   const clickedCardIndex = splitClickedIndex[1];
-  // console.log("cardActionHandler", "state", state, "clickedDeck", clickedDeck, "clickedIndex", clickedIndex, "clickedCard", clickedCard, "selectedDeck", selectedDeck, "selectedCard", selectedCard, "selectedIndex", selectedIndex);
-  // console.log("updateSelection", "selectedDeck", selectedDeck, "clickedDeck", clickedDeck );
   // deselect if already selected
   if( clickedCard === selectedCard ){
     return deselect( state, clickedDeck, clickedIndex );
@@ -400,11 +374,36 @@ const cardActionHandler = (state, clickedDeck, clickedIndex, clickedCard) => {
   return state;
 };
 
-
 const getNextPlayerIndex = (activePlayer, players) => {
   console.log("getNextPlayerIndex", activePlayer, players, activePlayer+1 % players.length);
   return (activePlayer+1) % players.length;
-}
+};
+
+const removeResourcesFromBank = (bank, resources) => {
+  console.log("removeResourcesFromBank", resources);
+  return Object.keys(resources).reduce( (output, resourceKey) => {
+    // if resources of resourceKey are left in the bank
+    resources[resourceKey] > 0 &&
+      bank[resourceKey].length > 0 &&
+      ( output.bank[resourceKey] = output.bank[resourceKey].slice() )
+    ;
+    // remove them and add them to drawnCards
+    for (var i = 0; i < Math.min( bank[resourceKey].length, resources[resourceKey] ); i++) {
+      output.drawnCards = output.drawnCards.concat( output.bank[resourceKey].splice(0, 1) );
+    }
+    return output
+  }, { bank: {...bank}, drawnCards: [] } );
+};
+
+const returnResourcesToBank = (bank, cards) => (
+  cards.reduce( (bank, card) => ({
+    ...bank,
+    [card.card]: [
+      ...bank[card.card],
+      card,
+    ],
+  }), bank )
+);
 
 const produceResources = (state) => {
   console.log("produceResources");
@@ -427,7 +426,12 @@ const produceResources = (state) => {
   }, { wood: 0, stone: 0, iron: 0 } );
   console.log("resourceGain", resourceGain );
   // TODO for each take resources from the bank and to the new players hand
-  return { ...state };
+  let producedCards = [];
+  console.log("state.bank.wood.length", state.bank.wood.length);
+  let { bank, drawnCards } = removeResourcesFromBank(state.bank, resourceGain);
+  console.log("state.bank.wood.length", state.bank.wood.length);
+  console.log("drawnCards", drawnCards);
+  return { ...state, bank, hand: [ ...state.hand, ...drawnCards ] };
 }
 
 export default function cards(state = gameInitialization(), action) {
@@ -448,12 +452,22 @@ export default function cards(state = gameInitialization(), action) {
     case CARDS_END_TURN:
       let nextPlayerIndex = getNextPlayerIndex(state.activePlayer, state.players);
       console.log("CARDS_END_TURN", nextPlayerIndex, state.players, state.players[nextPlayerIndex]);
-      // deselect a card
+      // deselect a selected card (if any)
       const { selectedDeck, selectedCard, selectedIndex} = findSelected(state);
       let newState = selectedCard ? {
         ...state,
         [selectedDeck]: updateCardByIndex( state[selectedDeck], selectedIndex, { selected: false } ),
       } : state;
+      //reset movement
+      newState = {
+        ...newState,
+        board: newState.board.map( (stack) => ( stack.map( (card) => (
+          card.movement ? {
+            ...card,
+            movesLeft: card.owner === nextPlayerIndex ? card.movement : 0,
+          } : card
+        ) ) ) ),
+      };
       return updateHighlights(
         produceResources({
           ...newState,

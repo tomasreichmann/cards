@@ -101,8 +101,8 @@ export default {
       labels: [],
       placement: [ { type: "land" }, { card: "wall" } ],
     },
-    "living quarters": {
-      card: "living",
+    "livingQuarters": {
+      card: "livingQuarters",
       name: "Living Quarters",
       type: "building",
       subType: "noble",
@@ -119,7 +119,7 @@ export default {
       type: "building",
       subType: "military",
       graphics: "http://orig13.deviantart.net/c8db/f/2015/002/c/a/armory_by_hfesbra-d8ca2pf.jpg",
-      cost: { wood: 0, iron: 2, stone: 1, gold: 0 },
+      cost: { wood: 0, iron: 4, stone: 2, gold: 0 },
       prerequisites: { card: ["barracks"] },
       tokenSlots: [],
       labels: [],
@@ -164,7 +164,7 @@ export default {
       type: "building",
       subType: "military",
       graphics: "http://www.3d-puzzlewelt.com/images_shop/product/mittelalter-pferdestall_umbum_4627081552141_1388_1.jpg",
-      cost: { wood: 3, iron: 0, stone: 0, gold: 0 },
+      cost: { wood: 6, iron: 2, stone: 0, gold: 0 },
       prerequisites: { card: ["armory"] },
       tokenSlots: [],
       labels: [],
@@ -287,9 +287,9 @@ export default {
       attack: 1,
       defense: 1,
     },
-    footman: {
-      card: "footman",
-      name: "Footman",
+    footmen: {
+      card: "footmen",
+      name: "Footmen",
       type: "unit",
       graphics: "http://img03.deviantart.net/235b/i/2010/251/e/a/men_at_arms_concept_by_neilblade-d2ybvfn.jpg",
       cost: { wood: 0, iron: 0, stone: 0, gold: 0 },
@@ -308,5 +308,84 @@ export default {
       attack: 0,
       defense: 0,
     },
+  },
+  events: {
+    // noble - gold production
+    noble: {
+      card: "noble",
+      name: "A noble has arrived",
+      description: "This nobleman would like to move in to the castle with his family, if you have at least 1 guard, 1 hall and 1 free living quarters. He will give you 1 gold per round.",      
+      graphics: "http://framingpainting.com/Uploadpic/Cornelis%20De%20Vos/big/The%20Family%20of%20the%20Artist.jpg",
+      type: "unit",
+      subType: "noble",
+      placement: { card: "livingQuarters" },
+      prerequisites: { card: ["guard", "hall", "livingQuarters"] },
+      production: { gold: 1 },
+      addToStack: true,
+      optional: true,
+    },
+    bandits: {
+      card: "bandits",
+      name: "Bandits",
+      description: "Bandits appeared in the territory and are looking for some noble buildings to rob",
+      graphics: "https://s-media-cache-ak0.pinimg.com/736x/4c/09/76/4c09769c201f7cd256ddbeae462bf3ea.jpg",
+      type: "unit",
+      subType: "bandits",
+      placement: { boardPosition: "edge" },
+      owner: "enemy",
+      optional: false,
+      movement: 1,
+      attack: 1,
+      defense: 1,
+    },
+    mercenaries: {
+      card: "mercenaries",
+      name: "Mercenaries are offering their services",
+      description: "Mercenaries have come into town and are looking for an assignment",
+      graphics: "http://orig08.deviantart.net/6e0a/f/2016/042/a/f/alex_stone_mercenaries_by_alexstoneart-d9rbzwi.jpg",
+      type: "unit",
+      cost: { gold: 3 },
+      production: { gold: 1 },
+      addToStack: true,
+      optional: true,
+      movement: 1,
+      attack: 2,
+      defense: 1,
+    },
+    // rebuild - reorder buildings on one tile
+    // tear down - remove one building and get 
+    // change of prices (shortage, abundance)
+    // thieves (instant) - resources lost (half of resources on hand rounded down minus number of guards)
+    // merchant (instant) - offer to buy or sell resources for a good price
+    // earthquake (instant) - 1 of a certain type of buildings get destroyed
+    // fresh horses - move any unit anywhere on the board
+    // banish - exile one unit from the board
+    // pleague(instant) - every turn for 3 turns you must sacrifice one unit ()
+    // a blessing - all units on board have +1 defense for one round
+    // marching order - all units on board have +1 movement for one round
+    // charge - all units on board have +1 attack for one round
+    // upgrade - upgrade attack, defense or movement of a certain type of unit if requirements are met for a price
+  },
+  scenario: {
+    kingOfThieves: {
+      description: "",
+      setup: {
+        // 1/5 events
+        // Highwaymen
+        // 1/5 events
+        // Kings taxes convoy
+        // 1/5 events
+        // Bandit hideout
+        // 1/5 events
+        // King of thieves
+        // 1/5 events
+        // events: [],
+        // Only guard units, no armory, no stables
+        // supply: []
+        // defaultHands
+        // hand: []
+      },
+      victoryConditions: []
+    }
   }
 };
