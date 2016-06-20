@@ -96,6 +96,10 @@
 }
 .card-frontFace-name {
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+  text-overflow: ellipsis;
 }
 
 .card-frontFace-cost {

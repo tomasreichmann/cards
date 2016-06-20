@@ -26,3 +26,24 @@
 	height: 16px;
 	border-radius: 100%;
 }
+
+.cols {
+	position: relative;
+	display: flex;
+}
+
+.col-hand {
+	flex: 8;
+}
+
+.col-draw-deck {
+	flex: 4;
+	display: flex;
+	> div {
+		float: left;
+		+ div {
+			margin-left: 40px;
+		}
+	}
+}
+

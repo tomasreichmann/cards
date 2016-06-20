@@ -1,4 +1,4 @@
-import { CARDS_SHUFFLE, CARDS_END_TURN, CARDS_MOVE_CARD, CARDS_SHOW_FACE, CARDS_CLICK, WOOD, IRON, SERF, STONE, GOLD, MAX_BUILDING_LEVEL } from '../constants';
+import { CARDS_SHUFFLE, CARDS_END_TURN, CARDS_MOVE_CARD, CARDS_SHOW_FACE, CARDS_CLICK, MAX_BUILDING_LEVEL } from '../constants';
 import gameInitialization from './gameInitialization';
 import { shuffle, updateLast } from './utils';
 
@@ -461,24 +461,35 @@ export default function cards(state = gameInitialization(), action) {
       //reset movement
       newState = {
         ...newState,
+        phase: 0,
         board: newState.board.map( (stack) => ( stack.map( (card) => (
           card.movement ? {
             ...card,
             movesLeft: card.owner === nextPlayerIndex ? card.movement : 0,
           } : card
         ) ) ) ),
+        drawDeck: newState.drawDeck.slice(0,-1),
+        discardDeck: [
+          ...newState.discardDeck,
+          {
+            ...newState.drawDeck[newState.drawDeck.length-1],
+            faceUp: true,
+          }
+        ]
       };
-      return updateHighlights(
-        produceResources({
-          ...newState,
-          // save previous players hand
-          players: state.players.map( (player, index) => ( index === state.activePlayer ? { ...player, hand: state.hand } : player ) ),
-          // load new players hand
-          hand: state.players[nextPlayerIndex].hand,
-          activePlayer: nextPlayerIndex,
-          round: state++,
-        })
-      );
+
+      return newState;
+      // return updateHighlights(
+      //   produceResources({
+      //     ...newState,
+      //     // save previous players hand
+      //     players: state.players.map( (player, index) => ( index === state.activePlayer ? { ...player, hand: state.hand } : player ) ),
+      //     // load new players hand
+      //     hand: state.players[nextPlayerIndex].hand,
+      //     activePlayer: nextPlayerIndex,
+      //     round: newState.round+1,
+      //   })
+      // );
 
     case CARDS_SHOW_FACE:
       return {

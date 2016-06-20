@@ -20,6 +20,12 @@ const cardDecks = {
   "bank-stone": [{ card: cardTypes.resources["stone"], amount: 20 }],
   "bank-iron": [{ card: cardTypes.resources["iron"], amount: 20 }],
   "bank-gold": [{ card: cardTypes.resources["gold"], amount: 20 }],
+  "drawDeck": [
+    { card: cardTypes.events.noble, amount: 4, extendBy: { faceUp: false } },
+    { card: cardTypes.events.bandits, amount: 4, extendBy: { faceUp: false } },
+    { card: cardTypes.events.mercenaries, amount: 4, extendBy: { faceUp: false } },
+  ],
+  "discardDeck": [],
   "hand": [
     { card: cardTypes.resources.wood, amount: 4, extendBy: { hover: true } },
     { card: cardTypes.resources.stone, amount: 2, extendBy: { hover: true } },
@@ -80,8 +86,9 @@ const initializePlayers = (players, hand) => (
     }
   ), {
     players: [],
-    activePlayer: 0,
-    round: 0,
+    activePlayer: players.length-1,
+    round: -1,
+    phase: 0,
     hand: hand.map( (item) => ( Object.assign({}, item) ) ),
   } ) 
 )
