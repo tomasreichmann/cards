@@ -434,6 +434,23 @@ const produceResources = (state) => {
   return { ...state, bank, hand: [ ...state.hand, ...drawnCards ] };
 }
 
+const handleDrawnCard = (state) => {
+  console.log("handleDrawnCard");
+  let drawnCard = {
+    ...state.drawDeck[state.drawDeck.length-1],
+    faceUp: true,
+  };
+  let newState = {
+    ...state,
+    drawDeck: state.drawDeck.slice(0,-1),
+    discardDeck: [
+      ...state.discardDeck,
+      drawnCard,
+    ],
+  };
+  return newState;
+}
+
 export default function cards(state = gameInitialization(), action) {
   const { key, index } = (action || {})["payload"] || {};
   switch (action.type) {
@@ -459,37 +476,37 @@ export default function cards(state = gameInitialization(), action) {
         [selectedDeck]: updateCardByIndex( state[selectedDeck], selectedIndex, { selected: false } ),
       } : state;
       //reset movement
-      newState = {
-        ...newState,
-        phase: 0,
-        board: newState.board.map( (stack) => ( stack.map( (card) => (
-          card.movement ? {
-            ...card,
-            movesLeft: card.owner === nextPlayerIndex ? card.movement : 0,
-          } : card
-        ) ) ) ),
-        drawDeck: newState.drawDeck.slice(0,-1),
-        discardDeck: [
-          ...newState.discardDeck,
-          {
-            ...newState.drawDeck[newState.drawDeck.length-1],
-            faceUp: true,
-          }
-        ]
-      };
+      newState = handleDrawnCard(
+        produceResources({
+          ...newState,
+          phase: 0,
+          board: newState.board.map( (stack) => ( stack.map( (card) => (
+            card.movement ? {
+              ...card,
+              movesLeft: card.owner === nextPlayerIndex ? card.movement : 0,
+            } : card
+          ) ) ) ),
+          // save previous players hand
+          players: newState.players.map( (player, index) => ( index === newState.activePlayer ? { ...player, hand: newState.hand } : player ) ),
+          // load new players hand
+          hand: newState.players[nextPlayerIndex].hand,
+          activePlayer: nextPlayerIndex,
+          round: newState.round+1,
+        })
+      );
 
-      return newState;
-      // return updateHighlights(
-      //   produceResources({
-      //     ...newState,
-      //     // save previous players hand
-      //     players: state.players.map( (player, index) => ( index === state.activePlayer ? { ...player, hand: state.hand } : player ) ),
-      //     // load new players hand
-      //     hand: state.players[nextPlayerIndex].hand,
-      //     activePlayer: nextPlayerIndex,
-      //     round: newState.round+1,
-      //   })
-      // );
+      if(newState.drawDeck.length === 0){
+        alert("Game ended");
+        // HANDLE END OF GAME
+        return {
+          ...newState,
+          
+        };
+      }
+
+      return updateHighlights(
+        newState
+      );
 
     case CARDS_SHOW_FACE:
       return {

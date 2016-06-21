@@ -16,9 +16,9 @@ import { PLAYER_COLORS } from '../../constants';
 import { connect } from 'react-redux';
 import actions, { shuffle, moveCard, showFace, cardClick, endTurn } from '../../actions/cards';
 
-const title = 'Cards';
 
 function Cards({...props, cards}, context) {
+  const title = 'Cards';
   context.setTitle(title);
 
   const clickAction = (index, key) => {

@@ -13,6 +13,9 @@ const cardDecks = {
   "board": Object.keys(cardTypes.lands).map( (key) => (
     { card: cardTypes.lands[key], amount: 3 }
   ) ),
+  "boardCenter": [
+    { card: cardTypes.lands.plains, amount: 4 }
+  ],
   "bank": Object.keys(cardTypes.resources).map( (key) => (
     { card: cardTypes.resources[key], amount: 20 }
   ) ),
@@ -61,7 +64,13 @@ const deckFactory = () => {
 const initializeDecks = () => {
   let decks = deckFactory();
   // shuffle and wrap board into stacks
-  decks.board = shuffle(decks.board).map( (item) => ( [item] ) );
+  let shuffledLands = shuffle(decks.board);
+  decks.board = [
+    ...shuffledLands.slice(0, 6),
+    ...decks.boardCenter,
+    ...shuffledLands.slice(6),
+  ].map( (item) => ( [item] ) );
+  decks.drawDeck = shuffle(decks.drawDeck);
   decks.supply = decks.supply.map( (item, index) => (
     updateLast( item, { hover: true } )
   ) );
@@ -71,6 +80,7 @@ const initializeDecks = () => {
     iron: decks["bank-iron"],
     gold: decks["bank-gold"],
   };
+  delete decks["boardCenter"];
   delete decks["bank-wood"];
   delete decks["bank-stone"];
   delete decks["bank-iron"];
